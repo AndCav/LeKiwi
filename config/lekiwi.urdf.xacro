@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="lekiwi">
+  <!-- Import lekiwi macro -->
+  <xacro:include filename="$(find lekiwi)/urdf/lekiwi.urdf" />
+  <!-- Import lekiwi ros2_control description -->
+  <xacro:include filename="$(find lekiwi)/config/lekiwi.ros2_control.xacro" />
+  <xacro:lekiwi_ros2_control name="lekiwi" use_fake_hardware="false"/>
+</robot>
