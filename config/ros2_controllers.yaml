@@ -1,23 +1,33 @@
-controller_manager:
-  ros__parameters:
-    update_rate: 10  # Hz
-    joint_state_broadcaster:
-      type: joint_state_broadcaster/JointStateBroadcaster
-    kiwi_controller:
-      type: omni_wheel_drive_controller/OmniWheelDriveController
+lekiwi:
+  controller_manager:
+    ros__parameters:
+      update_rate: 10  # Hz
+      joint_state_broadcaster:
+        type: joint_state_broadcaster/JointStateBroadcaster
+      kiwi_controller:
+        type: forward_command_controller/ForwardCommandController
+      arm_position_controller:
+        type: forward_command_controller/ForwardCommandController
+      gripper_position_controller:
+        type: forward_command_controller/ForwardCommandController
 
-kiwi_controller:
-  ros__parameters:
-    wheel_offset: 1.047  # 60 degrees
-    wheel_names: ["joint7", "joint8", "joint9"]
-    robot_radius: 0.14
-    wheel_radius: 0.05
-    odom_frame_id: odom
-    base_frame_id: base_link
-    pose_covariance_diagonal: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
-    twist_covariance_diagonal: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
-    open_loop: false
-    position_feedback: false
-    enable_odom_tf: true
-    cmd_vel_timeout: 0.5
-    publish_limited_velocity: true
+  kiwi_controller:
+    ros__parameters:
+      joints: [joint7, joint8, joint9]
+      interface_name: velocity
+
+  arm_position_controller:
+    ros__parameters:
+      joints:
+        - STS3215_03a_v1_Revolute_45
+        - STS3215_03a_v1_1_Revolute_49
+        - STS3215_03a_v1_2_Revolute_51
+        - STS3215_03a_v1_3_Revolute_53
+        - STS3215_03a_Wrist_Roll_v1_Revolute_55
+      interface_name: position
+
+  gripper_position_controller:
+    ros__parameters:
+      joints:
+        - STS3215_03a_v1_4_Revolute_57
+      interface_name: position

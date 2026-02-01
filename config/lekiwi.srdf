@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<robot name="lekiwi">
+  <group name="arm">
+    <joint name="STS3215_03a_v1_Revolute_45"/>
+    <joint name="STS3215_03a_v1_1_Revolute_49"/>
+    <joint name="STS3215_03a_v1_2_Revolute_51"/>
+    <joint name="STS3215_03a_v1_3_Revolute_53"/>
+    <joint name="STS3215_03a_Wrist_Roll_v1_Revolute_55"/>
+  </group>
+  <group name="gripper">
+    <joint name="STS3215_03a_v1_4_Revolute_57"/>
+  </group>
+  <group_state name="home" group="arm">
+    <joint name="STS3215_03a_v1_Revolute_45" value="0.0"/>
+    <joint name="STS3215_03a_v1_1_Revolute_49" value="0.0"/>
+    <joint name="STS3215_03a_v1_2_Revolute_51" value="0.0"/>
+    <joint name="STS3215_03a_v1_3_Revolute_53" value="0.0"/>
+    <joint name="STS3215_03a_Wrist_Roll_v1_Revolute_55" value="0.0"/>
+  </group_state>
+</robot>

@@ -8,7 +8,13 @@ install(
     config
     launch
     rviz
+    scripts
     urdf
     DESTINATION share/${PROJECT_NAME})
+
+install(
+  PROGRAMS
+    scripts/lekiwi_joint_command_mux.py
+  DESTINATION lib/${PROJECT_NAME})
 
 ament_package()
