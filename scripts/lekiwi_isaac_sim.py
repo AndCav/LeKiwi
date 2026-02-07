@@ -70,6 +70,8 @@ def main() -> int:
     import_config.merge_fixed_joints = _str_to_bool(args.merge_fixed_joints)
     import_config.convex_decomp = _str_to_bool(args.convex_decomp)
     import_config.import_inertia_tensor = True
+    # Keep imported links from internally colliding by default.
+    import_config.self_collision = False
     import_config.fix_base = _str_to_bool(args.fix_base)
     import_config.distance_scale = args.distance_scale
 
@@ -177,6 +179,14 @@ def main() -> int:
             wheel_joints = {"joint7", "joint8", "joint9"}
             wheel_stiffness = 0.0
             wheel_damping = 200.0
+            arm_joints = {
+                "STS3215_03a_v1_Revolute_45",
+                "STS3215_03a_v1_1_Revolute_49",
+                "STS3215_03a_v1_2_Revolute_51",
+                "STS3215_03a_v1_3_Revolute_53",
+                "STS3215_03a_Wrist_Roll_v1_Revolute_55",
+                "STS3215_03a_v1_4_Revolute_57",
+            }
             arm_stiffness = 1.0e5
             arm_damping = 1.0e3
             max_force = 1.0e6
@@ -187,14 +197,16 @@ def main() -> int:
 
             for prim in Usd.PrimRange(root):
                 if prim.IsA(UsdPhysics.RevoluteJoint):
-                    drive = UsdPhysics.DriveAPI.Apply(prim, "angular")
                     name = prim.GetName()
+                    drive = UsdPhysics.DriveAPI.Apply(prim, "angular")
                     if name in wheel_joints:
                         drive.GetStiffnessAttr().Set(wheel_stiffness)
                         drive.GetDampingAttr().Set(wheel_damping)
-                    else:
+                    elif name in arm_joints:
                         drive.GetStiffnessAttr().Set(arm_stiffness)
                         drive.GetDampingAttr().Set(arm_damping)
+                    else:
+                        continue
                     drive.GetMaxForceAttr().Set(max_force)
 
         _tune_joint_drives(stage, prim_path)
