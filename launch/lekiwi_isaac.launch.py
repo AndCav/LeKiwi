@@ -220,9 +220,6 @@ def generate_launch_description():
             {"use_sim_time": use_sim_time},
             {"robot_description": robot_description},
         ],
-        remappings=[
-            ("/robot_description", "/lekiwi/robot_description"),
-        ],
     )
 
     control_node = Node(

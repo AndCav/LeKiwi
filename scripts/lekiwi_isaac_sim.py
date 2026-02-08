@@ -166,7 +166,21 @@ def main() -> int:
                     return parent_prim
             return stage.GetPrimAtPath(robot_prim_path)
 
-        def _build_ros2_control_graph(stage, robot_prim_path: str, enable_ros_wheel_commands: bool):
+        def _find_base_link_prim_path(stage, robot_prim_path: str):
+            root = _get_robot_search_root(stage, robot_prim_path)
+            if not root.IsValid():
+                return ""
+            for prim in Usd.PrimRange(root):
+                if prim.GetName().lower() == "base_link":
+                    return str(prim.GetPath())
+            return ""
+
+        def _build_ros2_control_graph(
+            stage,
+            robot_prim_path: str,
+            enable_ros_wheel_commands: bool,
+            base_tf_prim_path: str,
+        ):
             old_graph_path = f"{robot_prim_path}/ros2_control_graph"
             if stage.GetPrimAtPath(old_graph_path).IsValid():
                 stage.RemovePrim(old_graph_path)
@@ -181,14 +195,17 @@ def main() -> int:
                 ("sub_js_arm", "isaacsim.ros2.bridge.ROS2SubscribeJointState"),
                 ("art_ctl_arm", "isaacsim.core.nodes.IsaacArticulationController"),
                 ("pub_clock", "isaacsim.ros2.bridge.ROS2PublishClock"),
+                ("pub_tf_base", "isaacsim.ros2.bridge.ROS2PublishTransformTree"),
             ]
             connect = [
                 ("tick.outputs:tick", "pub_js.inputs:execIn"),
                 ("tick.outputs:tick", "sub_js_arm.inputs:execIn"),
                 ("tick.outputs:tick", "art_ctl_arm.inputs:execIn"),
                 ("tick.outputs:tick", "pub_clock.inputs:execIn"),
+                ("tick.outputs:tick", "pub_tf_base.inputs:execIn"),
                 ("sim_time.outputs:simulationTime", "pub_js.inputs:timeStamp"),
                 ("sim_time.outputs:simulationTime", "pub_clock.inputs:timeStamp"),
+                ("sim_time.outputs:simulationTime", "pub_tf_base.inputs:timeStamp"),
                 ("sub_js_arm.outputs:jointNames", "art_ctl_arm.inputs:jointNames"),
                 ("sub_js_arm.outputs:positionCommand", "art_ctl_arm.inputs:positionCommand"),
             ]
@@ -201,6 +218,8 @@ def main() -> int:
                 ("art_ctl_arm.inputs:robotPath", robot_prim_path),
                 ("pub_clock.inputs:nodeNamespace", ""),
                 ("pub_clock.inputs:topicName", "/clock"),
+                ("pub_tf_base.inputs:nodeNamespace", ""),
+                ("pub_tf_base.inputs:topicName", "/tf"),
             ]
             if enable_ros_wheel_commands:
                 create_nodes.extend(
@@ -234,6 +253,28 @@ def main() -> int:
                 },
             )
             import carb
+
+            if base_tf_prim_path:
+                try:
+                    from isaacsim.core.nodes.scripts.utils import set_target_prims
+
+                    set_target_prims(
+                        primPath=f"{graph_path}/pub_tf_base",
+                        inputName="inputs:targetPrims",
+                        targetPrimPaths=[base_tf_prim_path],
+                    )
+                    carb.log_warn(
+                        f"Publishing world/base TF from Isaac prim: {base_tf_prim_path}"
+                    )
+                except Exception as exc:
+                    carb.log_warn(
+                        "Failed to configure world/base TF publisher: "
+                        + str(exc)
+                    )
+            else:
+                carb.log_warn(
+                    "base_link prim not found; RViz global-frame visualization may be limited"
+                )
 
             carb.log_warn(f"LeKiwi Isaac script: {__file__}")
             carb.log_warn(f"ROS2 control graph created at {graph_path}")
@@ -344,8 +385,11 @@ def main() -> int:
                 wheel_visual_spin_angles_deg[spin_op] = 0.0
 
         _tune_joint_drives(stage, prim_path)
+        base_tf_prim_path = _find_base_link_prim_path(stage, prim_path)
         if enable_ros_features:
-            _build_ros2_control_graph(stage, prim_path, True)
+            _build_ros2_control_graph(
+                stage, prim_path, True, base_tf_prim_path
+            )
         else:
             print("Direct wheel mode: ROS2 graph disabled")
 
