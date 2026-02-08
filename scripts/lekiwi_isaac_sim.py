@@ -3,12 +3,29 @@ import argparse
 import math
 import os
 import sys
+import time
 
 from isaacsim import SimulationApp
 
 
 def _str_to_bool(value: str) -> bool:
     return str(value).strip().lower() in ("1", "true", "yes", "y")
+
+
+def _parse_wheel_velocity_arg(raw_value: str):
+    text = str(raw_value).strip()
+    if text == "":
+        return None
+
+    parts = [p.strip() for p in text.split(",") if p.strip() != ""]
+    if len(parts) == 1:
+        v = float(parts[0])
+        return [v, v, v]
+    if len(parts) == 3:
+        return [float(parts[0]), float(parts[1]), float(parts[2])]
+    raise ValueError(
+        "--wheel-direct-velocity must be empty, one value ('3.0') or three values ('3.0,3.0,3.0')"
+    )
 
 
 def main() -> int:
@@ -28,12 +45,25 @@ def main() -> int:
     parser.add_argument("--convex-decomp", default="false", help="Use convex decomposition [true/false]")
     parser.add_argument("--distance-scale", type=float, default=1.0, help="URDF distance scale")
     parser.add_argument(
+        "--wheel-direct-velocity",
+        default="",
+        help="Bypass ROS wheel commands and drive wheels directly in Isaac. "
+        "Format: '' (disabled), '3.0' (all wheels), or '3.0,3.0,3.0' "
+        "(joint7,joint8,joint9) in rad/s",
+    )
+    parser.add_argument(
         "--ros-package-path",
         default="",
         help="ROS_PACKAGE_PATH prefix to resolve package:// URDF meshes",
     )
 
     args = parser.parse_args()
+    wheel_joint_order = ["joint7", "joint8", "joint9"]
+    try:
+        direct_wheel_velocity = _parse_wheel_velocity_arg(args.wheel_direct_velocity)
+    except ValueError as exc:
+        print(str(exc), file=sys.stderr)
+        return 2
 
     if not os.path.exists(args.urdf):
         print(f"URDF not found: {args.urdf}", file=sys.stderr)
@@ -55,11 +85,13 @@ def main() -> int:
     import omni.graph.core as og
     from pxr import Gf, PhysicsSchemaTools, PhysxSchema, Sdf, Usd, UsdGeom, UsdLux, UsdPhysics
 
+    enable_ros_features = direct_wheel_velocity is None
     app = omni.kit.app.get_app()
     em = app.get_extension_manager()
-    em.set_extension_enabled_immediate("isaacsim.ros2.bridge", True)
-    em.set_extension_enabled_immediate("isaacsim.ros2.nodes", True)
-    em.set_extension_enabled_immediate("isaacsim.core.nodes", True)
+    if enable_ros_features:
+        em.set_extension_enabled_immediate("isaacsim.ros2.bridge", True)
+        em.set_extension_enabled_immediate("isaacsim.ros2.nodes", True)
+        em.set_extension_enabled_immediate("isaacsim.core.nodes", True)
 
     status, import_config = omni.kit.commands.execute("URDFCreateImportConfig")
     if not status:
@@ -110,6 +142,12 @@ def main() -> int:
     light.CreateIntensityAttr(500)
 
     if prim_path:
+        wheel_target_velocity_attrs = {}
+        wheel_target_position_attrs = {}
+        wheel_target_positions_deg = {}
+        wheel_visual_spin_ops = []
+        wheel_visual_spin_angles_deg = {}
+        revolute_joint_names = []
         prim = stage.GetPrimAtPath(prim_path)
         if prim.IsValid():
             xform = UsdGeom.XformCommonAPI(prim)
@@ -119,7 +157,16 @@ def main() -> int:
             yaw_deg = math.degrees(args.yaw)
             xform.SetRotate((roll_deg, pitch_deg, yaw_deg), UsdGeom.XformCommonAPI.RotationOrderXYZ)
 
-        def _build_ros2_control_graph(stage, robot_prim_path: str):
+        def _get_robot_search_root(stage, robot_prim_path: str):
+            root_path = Sdf.Path(robot_prim_path)
+            parent_path = root_path.GetParentPath()
+            if parent_path and str(parent_path) != "":
+                parent_prim = stage.GetPrimAtPath(parent_path)
+                if parent_prim.IsValid():
+                    return parent_prim
+            return stage.GetPrimAtPath(robot_prim_path)
+
+        def _build_ros2_control_graph(stage, robot_prim_path: str, enable_ros_wheel_commands: bool):
             old_graph_path = f"{robot_prim_path}/ros2_control_graph"
             if stage.GetPrimAtPath(old_graph_path).IsValid():
                 stage.RemovePrim(old_graph_path)
@@ -127,56 +174,79 @@ def main() -> int:
             if stage.GetPrimAtPath(graph_path).IsValid():
                 stage.RemovePrim(graph_path)
 
+            create_nodes = [
+                ("tick", "omni.graph.action.OnPlaybackTick"),
+                ("sim_time", "isaacsim.core.nodes.IsaacReadSimulationTime"),
+                ("pub_js", "isaacsim.ros2.bridge.ROS2PublishJointState"),
+                ("sub_js_arm", "isaacsim.ros2.bridge.ROS2SubscribeJointState"),
+                ("art_ctl_arm", "isaacsim.core.nodes.IsaacArticulationController"),
+                ("pub_clock", "isaacsim.ros2.bridge.ROS2PublishClock"),
+            ]
+            connect = [
+                ("tick.outputs:tick", "pub_js.inputs:execIn"),
+                ("tick.outputs:tick", "sub_js_arm.inputs:execIn"),
+                ("tick.outputs:tick", "art_ctl_arm.inputs:execIn"),
+                ("tick.outputs:tick", "pub_clock.inputs:execIn"),
+                ("sim_time.outputs:simulationTime", "pub_js.inputs:timeStamp"),
+                ("sim_time.outputs:simulationTime", "pub_clock.inputs:timeStamp"),
+                ("sub_js_arm.outputs:jointNames", "art_ctl_arm.inputs:jointNames"),
+                ("sub_js_arm.outputs:positionCommand", "art_ctl_arm.inputs:positionCommand"),
+            ]
+            set_values = [
+                ("pub_js.inputs:nodeNamespace", ""),
+                ("pub_js.inputs:topicName", "/topic_based_joint_states"),
+                ("pub_js.inputs:targetPrim", robot_prim_path),
+                ("sub_js_arm.inputs:nodeNamespace", ""),
+                ("sub_js_arm.inputs:topicName", "/isaac_joint_commands_arm"),
+                ("art_ctl_arm.inputs:robotPath", robot_prim_path),
+                ("pub_clock.inputs:nodeNamespace", ""),
+                ("pub_clock.inputs:topicName", "/clock"),
+            ]
+            if enable_ros_wheel_commands:
+                create_nodes.extend(
+                    [
+                        ("sub_js_wheels", "isaacsim.ros2.bridge.ROS2SubscribeJointState"),
+                        ("art_ctl_wheels", "isaacsim.core.nodes.IsaacArticulationController"),
+                    ]
+                )
+                connect.extend(
+                    [
+                        ("tick.outputs:tick", "sub_js_wheels.inputs:execIn"),
+                        ("tick.outputs:tick", "art_ctl_wheels.inputs:execIn"),
+                        ("sub_js_wheels.outputs:jointNames", "art_ctl_wheels.inputs:jointNames"),
+                        ("sub_js_wheels.outputs:velocityCommand", "art_ctl_wheels.inputs:velocityCommand"),
+                    ]
+                )
+                set_values.extend(
+                    [
+                        ("sub_js_wheels.inputs:nodeNamespace", ""),
+                        ("sub_js_wheels.inputs:topicName", "/isaac_joint_commands_wheels"),
+                        ("art_ctl_wheels.inputs:robotPath", robot_prim_path),
+                    ]
+                )
+
             og.Controller.edit(
                 {"graph_path": graph_path, "evaluator_name": "execution"},
                 {
-                    og.Controller.Keys.CREATE_NODES: [
-                        ("tick", "omni.graph.action.OnPlaybackTick"),
-                        ("sim_time", "isaacsim.core.nodes.IsaacReadSimulationTime"),
-                        ("pub_js", "isaacsim.ros2.bridge.ROS2PublishJointState"),
-                        ("sub_js_wheels", "isaacsim.ros2.bridge.ROS2SubscribeJointState"),
-                        ("sub_js_arm", "isaacsim.ros2.bridge.ROS2SubscribeJointState"),
-                        ("art_ctl_wheels", "isaacsim.core.nodes.IsaacArticulationController"),
-                        ("art_ctl_arm", "isaacsim.core.nodes.IsaacArticulationController"),
-                        ("pub_clock", "isaacsim.ros2.bridge.ROS2PublishClock"),
-                    ],
-                    og.Controller.Keys.CONNECT: [
-                        ("tick.outputs:tick", "pub_js.inputs:execIn"),
-                        ("tick.outputs:tick", "sub_js_wheels.inputs:execIn"),
-                        ("tick.outputs:tick", "sub_js_arm.inputs:execIn"),
-                        ("tick.outputs:tick", "art_ctl_wheels.inputs:execIn"),
-                        ("tick.outputs:tick", "art_ctl_arm.inputs:execIn"),
-                        ("tick.outputs:tick", "pub_clock.inputs:execIn"),
-                        ("sim_time.outputs:simulationTime", "pub_js.inputs:timeStamp"),
-                        ("sim_time.outputs:simulationTime", "pub_clock.inputs:timeStamp"),
-                        ("sub_js_wheels.outputs:jointNames", "art_ctl_wheels.inputs:jointNames"),
-                        ("sub_js_wheels.outputs:velocityCommand", "art_ctl_wheels.inputs:velocityCommand"),
-                        ("sub_js_arm.outputs:jointNames", "art_ctl_arm.inputs:jointNames"),
-                        ("sub_js_arm.outputs:positionCommand", "art_ctl_arm.inputs:positionCommand"),
-                    ],
-                    og.Controller.Keys.SET_VALUES: [
-                        ("pub_js.inputs:nodeNamespace", ""),
-                        ("pub_js.inputs:topicName", "/topic_based_joint_states"),
-                        ("pub_js.inputs:targetPrim", robot_prim_path),
-                        ("sub_js_wheels.inputs:nodeNamespace", ""),
-                        ("sub_js_wheels.inputs:topicName", "/isaac_joint_commands_wheels"),
-                        ("sub_js_arm.inputs:nodeNamespace", ""),
-                        ("sub_js_arm.inputs:topicName", "/isaac_joint_commands_arm"),
-                        ("art_ctl_wheels.inputs:robotPath", robot_prim_path),
-                        ("art_ctl_arm.inputs:robotPath", robot_prim_path),
-                        ("pub_clock.inputs:nodeNamespace", ""),
-                        ("pub_clock.inputs:topicName", "/clock"),
-                    ],
+                    og.Controller.Keys.CREATE_NODES: create_nodes,
+                    og.Controller.Keys.CONNECT: connect,
+                    og.Controller.Keys.SET_VALUES: set_values,
                 },
             )
             import carb
 
             carb.log_warn(f"LeKiwi Isaac script: {__file__}")
             carb.log_warn(f"ROS2 control graph created at {graph_path}")
-            carb.log_warn("ROS2 joint command topics: /isaac_joint_commands_wheels, /isaac_joint_commands_arm")
+            if enable_ros_wheel_commands:
+                carb.log_warn(
+                    "ROS2 joint command topics: /isaac_joint_commands_wheels, /isaac_joint_commands_arm"
+                )
+            else:
+                carb.log_warn("ROS2 wheel topic disabled; wheel velocities are driven directly in Isaac")
 
         def _tune_joint_drives(stage, robot_prim_path: str):
             wheel_joints = {"joint7", "joint8", "joint9"}
+            # Keep wheel joints in velocity-drive mode (no position spring pullback).
             wheel_stiffness = 0.0
             wheel_damping = 200.0
             arm_joints = {
@@ -191,17 +261,47 @@ def main() -> int:
             arm_damping = 1.0e3
             max_force = 1.0e6
 
-            root = stage.GetPrimAtPath(robot_prim_path)
+            root = _get_robot_search_root(stage, robot_prim_path)
             if not root.IsValid():
                 return
 
             for prim in Usd.PrimRange(root):
                 if prim.IsA(UsdPhysics.RevoluteJoint):
                     name = prim.GetName()
+                    revolute_joint_names.append(name)
                     drive = UsdPhysics.DriveAPI.Apply(prim, "angular")
                     if name in wheel_joints:
-                        drive.GetStiffnessAttr().Set(wheel_stiffness)
-                        drive.GetDampingAttr().Set(wheel_damping)
+                        if direct_wheel_velocity is not None:
+                            # In direct mode, use a position ramp for robust visible rotation.
+                            drive.GetStiffnessAttr().Set(5.0e4)
+                            drive.GetDampingAttr().Set(2.0e3)
+                        else:
+                            drive.GetStiffnessAttr().Set(wheel_stiffness)
+                            drive.GetDampingAttr().Set(wheel_damping)
+                        if direct_wheel_velocity is not None:
+                            wheel_idx = wheel_joint_order.index(name)
+                            target_velocity_rad_s = float(
+                                direct_wheel_velocity[wheel_idx]
+                            )
+                            target_velocity_deg_s = math.degrees(
+                                target_velocity_rad_s
+                            )
+                            target_velocity_attr = drive.GetTargetVelocityAttr()
+                            if not target_velocity_attr.IsValid():
+                                target_velocity_attr = drive.CreateTargetVelocityAttr()
+                            target_velocity_attr.Set(target_velocity_deg_s)
+                            wheel_target_velocity_attrs[name] = target_velocity_attr
+                            target_position_attr = drive.GetTargetPositionAttr()
+                            if not target_position_attr.IsValid():
+                                target_position_attr = drive.CreateTargetPositionAttr()
+                            current_target_position = target_position_attr.Get()
+                            if current_target_position is None:
+                                current_target_position = 0.0
+                            target_position_attr.Set(float(current_target_position))
+                            wheel_target_position_attrs[name] = target_position_attr
+                            wheel_target_positions_deg[name] = float(
+                                current_target_position
+                            )
                     elif name in arm_joints:
                         drive.GetStiffnessAttr().Set(arm_stiffness)
                         drive.GetDampingAttr().Set(arm_damping)
@@ -209,13 +309,119 @@ def main() -> int:
                         continue
                     drive.GetMaxForceAttr().Set(max_force)
 
+        def _setup_wheel_visual_spin(stage, robot_prim_path: str, enabled_joint_names=None):
+            root = _get_robot_search_root(stage, robot_prim_path)
+            if not root.IsValid():
+                return
+
+            for prim in Usd.PrimRange(root):
+                name_lower = prim.GetName().lower()
+                if "omni_directional_wheel_single_body" not in name_lower:
+                    continue
+                if not prim.IsA(UsdGeom.Xform):
+                    continue
+
+                # Pick joint mapping from wheel link suffix.
+                if "_v1_2" in name_lower:
+                    joint_name = "joint8"
+                elif "_v1_1" in name_lower:
+                    joint_name = "joint9"
+                else:
+                    joint_name = "joint7"
+                if enabled_joint_names is not None and joint_name not in enabled_joint_names:
+                    continue
+
+                target_prim = prim
+                for child in prim.GetChildren():
+                    if "visual" in child.GetName().lower() and child.IsA(UsdGeom.Xform):
+                        target_prim = child
+                        break
+
+                xformable = UsdGeom.Xformable(target_prim)
+                spin_op = xformable.AddRotateXYZOp(opSuffix="direct_spin")
+                spin_op.Set(Gf.Vec3d(0.0, 0.0, 0.0))
+                wheel_visual_spin_ops.append((joint_name, spin_op))
+                wheel_visual_spin_angles_deg[spin_op] = 0.0
+
         _tune_joint_drives(stage, prim_path)
-        _build_ros2_control_graph(stage, prim_path)
+        if enable_ros_features:
+            _build_ros2_control_graph(stage, prim_path, True)
+        else:
+            print("Direct wheel mode: ROS2 graph disabled")
+
+        if direct_wheel_velocity is not None:
+            direct_wheel_velocity_deg = [math.degrees(v) for v in direct_wheel_velocity]
+            print(
+                "Direct wheel velocity mode enabled "
+                "(rad/s -> deg/s, joint7/joint8/joint9): "
+                f"{direct_wheel_velocity} -> {direct_wheel_velocity_deg}"
+            )
+            missing = [j for j in wheel_joint_order if j not in wheel_target_velocity_attrs]
+            if missing:
+                print(
+                    "Warning: some wheel joints were not found for direct velocity mode: "
+                    + ", ".join(missing),
+                    file=sys.stderr,
+                )
+                # Visual spin is only a fallback for wheel joints that were not detected as physics joints.
+                _setup_wheel_visual_spin(stage, prim_path, set(missing))
+            print(
+                "Wheel joints found in stage: "
+                + ", ".join(sorted(wheel_target_velocity_attrs.keys()))
+            )
+            print(
+                "All revolute joints seen in stage: "
+                + ", ".join(sorted(set(revolute_joint_names)))
+            )
+            print(
+                "Wheel visual spin prims attached: "
+                + str(len(wheel_visual_spin_ops))
+            )
     timeline = omni.timeline.get_timeline_interface()
     timeline.play()
 
     try:
+        last_wall_time = time.perf_counter()
         while kit.is_running():
+            if direct_wheel_velocity is not None:
+                now_wall_time = time.perf_counter()
+                dt_s = max(0.0, min(0.1, now_wall_time - last_wall_time))
+                last_wall_time = now_wall_time
+                for joint_name, target_velocity_rad_s in zip(
+                    wheel_joint_order, direct_wheel_velocity
+                ):
+                    velocity_attr = wheel_target_velocity_attrs.get(joint_name)
+                    if velocity_attr is not None and velocity_attr.IsValid():
+                        target_velocity_deg_s = math.degrees(
+                            float(target_velocity_rad_s)
+                        )
+                        velocity_attr.Set(target_velocity_deg_s)
+                        position_attr = wheel_target_position_attrs.get(joint_name)
+                        if position_attr is not None and position_attr.IsValid():
+                            wheel_target_positions_deg[joint_name] += (
+                                target_velocity_deg_s * dt_s
+                            )
+                            position_attr.Set(
+                                float(wheel_target_positions_deg[joint_name])
+                            )
+                for joint_name, spin_op in wheel_visual_spin_ops:
+                    try:
+                        wheel_idx = wheel_joint_order.index(joint_name)
+                        target_velocity_deg_s = math.degrees(
+                            float(direct_wheel_velocity[wheel_idx])
+                        )
+                        wheel_visual_spin_angles_deg[spin_op] += (
+                            target_velocity_deg_s * dt_s
+                        )
+                        spin_op.Set(
+                            Gf.Vec3d(
+                                0.0,
+                                0.0,
+                                float(wheel_visual_spin_angles_deg[spin_op]),
+                            )
+                        )
+                    except Exception:
+                        pass
             kit.update()
     finally:
         timeline.stop()

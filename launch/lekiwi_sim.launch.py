@@ -80,7 +80,6 @@ def generate_launch_description():
             ),
         ],
         remappings=[
-            ("~/cmd_vel", "/cmd_vel"),
             ("~/odom", "/odom"),
         ],
         output="screen",
@@ -107,17 +106,6 @@ def generate_launch_description():
         output="screen",
     )
 
-    kiwi_controller_spawner = Node(
-        package="controller_manager",
-        executable="spawner",
-        arguments=[
-            "kiwi_controller",
-            "--controller-manager",
-            "/controller_manager",
-        ],
-        output="screen",
-    )
-
     rviz_node = Node(
         package="rviz2",
         executable="rviz2",
@@ -130,8 +118,6 @@ def generate_launch_description():
     ld = LaunchDescription(ARGUMENTS)
     ld.add_action(control_node)
     ld.add_action(joint_state_broadcaster_spawner)
-    ld.add_action(kiwi_controller_spawner)
     ld.add_action(robot_state_publisher_node)
     ld.add_action(rviz_node)
     return ld
-

@@ -8,6 +8,8 @@ lekiwi:
         type: joint_trajectory_controller/JointTrajectoryController
       gripper_position_controller:
         type: joint_trajectory_controller/JointTrajectoryController
+      wheel_velocity_controller:
+        type: forward_command_controller/ForwardCommandController
 
   arm_position_controller:
     ros__parameters:
@@ -58,3 +60,11 @@ lekiwi:
         STS3215_03a_v1_4_Revolute_57:
           trajectory: 0.2
           goal: 0.05
+
+  wheel_velocity_controller:
+    ros__parameters:
+      joints:
+        - joint7
+        - joint8
+        - joint9
+      interface_name: velocity

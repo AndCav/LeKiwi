@@ -11,8 +11,6 @@ class LeKiwiJointCommandMux(Node):
     def __init__(self) -> None:
         super().__init__("lekiwi_joint_command_mux")
         self.declare_parameter("publish_rate_hz", 50.0)
-
-        self._wheel_joints = ["joint7", "joint8", "joint9"]
         self._arm_joints = [
             "STS3215_03a_v1_Revolute_45",
             "STS3215_03a_v1_1_Revolute_49",
@@ -21,8 +19,6 @@ class LeKiwiJointCommandMux(Node):
             "STS3215_03a_Wrist_Roll_v1_Revolute_55",
             "STS3215_03a_v1_4_Revolute_57",
         ]
-
-        self._wheel_cmd = [0.0] * len(self._wheel_joints)
         self._arm_cmd = [0.0] * (len(self._arm_joints) - 1)
         self._arm_control_joints = list(self._arm_joints[:-1])
         self._arm_joint_to_index = {

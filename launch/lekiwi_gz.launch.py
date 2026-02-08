@@ -174,7 +174,6 @@ def generate_launch_description():
         ],
         remappings=[
             ("~/robot_description", "/robot_description"),
-            ("~/cmd_vel", "/cmd_vel"),
             ("~/odom", "/odom"),
         ],
         output="screen",
@@ -186,18 +185,6 @@ def generate_launch_description():
         executable="spawner",
         arguments=[
             "joint_state_broadcaster",
-            "--controller-manager",
-            "/controller_manager",
-        ],
-        output="screen",
-        condition=IfCondition(use_ros2_control),
-    )
-
-    kiwi_controller_spawner = Node(
-        package="controller_manager",
-        executable="spawner",
-        arguments=[
-            "kiwi_controller",
             "--controller-manager",
             "/controller_manager",
         ],
@@ -263,7 +250,6 @@ def generate_launch_description():
     ld.add_action(robot_state_publisher_node)
     ld.add_action(control_node)
     ld.add_action(joint_state_broadcaster_spawner)
-    ld.add_action(kiwi_controller_spawner)
     ld.add_action(joint_state_publisher_node)
     ld.add_action(spawn)
     ld.add_action(rviz_node)

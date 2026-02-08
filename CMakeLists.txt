@@ -14,7 +14,9 @@ install(
 
 install(
   PROGRAMS
+    scripts/lekiwi_cmd_vel_to_wheel_velocity.py
     scripts/lekiwi_joint_command_mux.py
+    scripts/lekiwi_wheel_velocity_bridge.py
   DESTINATION lib/${PROJECT_NAME})
 
 ament_package()

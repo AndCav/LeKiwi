@@ -73,6 +73,23 @@ ARGUMENTS = [
         description="Start ros2_control (controller_manager + controllers).",
     ),
     DeclareLaunchArgument(
+        "enable_wheel_velocity_bridge",
+        default_value="true",
+        description="Start wheel velocity bridge node for Isaac wheel control.",
+    ),
+    DeclareLaunchArgument(
+        "enable_cmd_vel_to_wheel",
+        default_value="false",
+        description="Start cmd_vel to wheel velocity translator node.",
+    ),
+    DeclareLaunchArgument(
+        "wheel_direct_velocity",
+        default_value="",
+        description="Direct wheel velocity in Isaac without ROS wheel topic. "
+        "Format: '' (disabled), '3.0' (all wheels), or '3.0,3.0,3.0' "
+        "(joint7,joint8,joint9) in rad/s.",
+    ),
+    DeclareLaunchArgument(
         "use_rviz",
         default_value="false",
         description="Start RViz2 (off by default).",
@@ -128,6 +145,9 @@ def generate_launch_description():
     yaw = LaunchConfiguration("yaw")
     fix_base = LaunchConfiguration("fix_base")
     use_ros2_control = LaunchConfiguration("use_ros2_control")
+    enable_wheel_velocity_bridge = LaunchConfiguration("enable_wheel_velocity_bridge")
+    enable_cmd_vel_to_wheel = LaunchConfiguration("enable_cmd_vel_to_wheel")
+    wheel_direct_velocity = LaunchConfiguration("wheel_direct_velocity")
     use_rviz = LaunchConfiguration("use_rviz")
     use_joint_state_publisher = LaunchConfiguration("use_joint_state_publisher")
     rviz_config = LaunchConfiguration("rviz_config")
@@ -172,6 +192,8 @@ def generate_launch_description():
             yaw,
             "--fix-base",
             fix_base,
+            "--wheel-direct-velocity",
+            wheel_direct_velocity,
             "--ros-package-path",
             ros_package_path,
         ],
@@ -227,23 +249,31 @@ def generate_launch_description():
         condition=IfCondition(use_ros2_control),
     )
 
+    wheel_velocity_bridge_node = Node(
+        package="lekiwi",
+        executable="lekiwi_wheel_velocity_bridge.py",
+        output="screen",
+        parameters=[
+            {"use_sim_time": use_sim_time},
+        ],
+        condition=IfCondition(enable_wheel_velocity_bridge),
+    )
+
+    cmd_vel_to_wheel_node = Node(
+        package="lekiwi",
+        executable="lekiwi_cmd_vel_to_wheel_velocity.py",
+        output="screen",
+        parameters=[
+            {"use_sim_time": use_sim_time},
+        ],
+        condition=IfCondition(enable_cmd_vel_to_wheel),
+    )
+
     joint_state_broadcaster_spawner = Node(
         package="controller_manager",
         executable="spawner",
         arguments=[
             "joint_state_broadcaster",
-            "--controller-manager",
-            "/lekiwi/controller_manager",
-        ],
-        output="screen",
-        condition=IfCondition(use_ros2_control),
-    )
-
-    kiwi_controller_spawner = Node(
-        package="controller_manager",
-        executable="spawner",
-        arguments=[
-            "kiwi_controller",
             "--controller-manager",
             "/lekiwi/controller_manager",
         ],
@@ -268,6 +298,18 @@ def generate_launch_description():
         executable="spawner",
         arguments=[
             "gripper_position_controller",
+            "--controller-manager",
+            "/lekiwi/controller_manager",
+        ],
+        output="screen",
+        condition=IfCondition(use_ros2_control),
+    )
+
+    wheel_velocity_controller_spawner = Node(
+        package="controller_manager",
+        executable="spawner",
+        arguments=[
+            "wheel_velocity_controller",
             "--controller-manager",
             "/lekiwi/controller_manager",
         ],
@@ -311,10 +353,12 @@ def generate_launch_description():
     ld.add_action(robot_state_publisher_node)
     ld.add_action(control_node)
     ld.add_action(joint_command_mux_node)
+    ld.add_action(wheel_velocity_bridge_node)
+    ld.add_action(cmd_vel_to_wheel_node)
     ld.add_action(joint_state_broadcaster_spawner)
-    ld.add_action(kiwi_controller_spawner)
     ld.add_action(arm_position_controller_spawner)
     ld.add_action(gripper_position_controller_spawner)
+    ld.add_action(wheel_velocity_controller_spawner)
     ld.add_action(joint_state_publisher_node)
     ld.add_action(rviz_node)
     return ld
