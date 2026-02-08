@@ -17,6 +17,7 @@ class LeKiwiWheelVelocityBridge(Node):
         self.declare_parameter("isaac_topic", "/isaac_joint_commands_wheels")
         self.declare_parameter("publish_rate_hz", 50.0)
         self.declare_parameter("command_timeout_s", 0.5)
+        self.declare_parameter("publish_startup_zero", True)
 
         self._wheel_joint_names = [
             str(v) for v in list(self.get_parameter("wheel_joint_names").value)
@@ -32,6 +33,9 @@ class LeKiwiWheelVelocityBridge(Node):
         if self._command_timeout_s < 0.0:
             self.get_logger().warn("command_timeout_s < 0.0, forcing to 0.0")
             self._command_timeout_s = 0.0
+        self._publish_startup_zero = bool(
+            self.get_parameter("publish_startup_zero").value
+        )
 
         command_topic = str(self.get_parameter("command_topic").value)
         isaac_topic = str(self.get_parameter("isaac_topic").value)
@@ -39,7 +43,6 @@ class LeKiwiWheelVelocityBridge(Node):
         self._cmd_velocity = [0.0] * self._wheel_count
         self._last_cmd_time = None
         self._has_received_cmd = False
-        self._timeout_zero_sent = False
 
         self.create_subscription(
             Float64MultiArray, command_topic, self._on_wheel_velocity_cmd, 10
@@ -60,7 +63,6 @@ class LeKiwiWheelVelocityBridge(Node):
         self._cmd_velocity = [float(v) for v in msg.data]
         self._last_cmd_time = self.get_clock().now()
         self._has_received_cmd = True
-        self._timeout_zero_sent = False
 
     def _is_command_fresh(self, now_clock) -> bool:
         if self._last_cmd_time is None:
@@ -80,14 +82,20 @@ class LeKiwiWheelVelocityBridge(Node):
         self._isaac_pub.publish(msg)
 
     def _on_timer(self) -> None:
+        if (
+            self._publish_startup_zero
+            and not self._has_received_cmd
+        ):
+            self._publish_velocity([0.0] * self._wheel_count)
+            return
+
         now_clock = self.get_clock().now()
         if self._is_command_fresh(now_clock):
             self._publish_velocity(self._cmd_velocity)
             return
 
-        if self._has_received_cmd and not self._timeout_zero_sent:
-            self._publish_velocity([0.0] * self._wheel_count)
-            self._timeout_zero_sent = True
+        # Safety hold: keep sending zero while command stream is stale.
+        self._publish_velocity([0.0] * self._wheel_count)
 
 
 def main() -> None:

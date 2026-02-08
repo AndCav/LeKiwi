@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import ast
 import math
 
 import rclpy
@@ -12,20 +13,25 @@ class LeKiwiCmdVelToWheelVelocity(Node):
     def __init__(self) -> None:
         super().__init__("lekiwi_cmd_vel_to_wheel_velocity")
 
-        self.declare_parameter("cmd_vel_topic", "/cmd_vel")
+        # Output ordering is fixed to joint7, joint8, joint9.
+        # With current URDF layout this corresponds to:
+        # wheel1 (front-left/top-left), wheel2 (rear), wheel3 (front-right/top-right).
+        self.declare_parameter("cmd_vel_topic", "/lekiwi/cmd_vel")
         self.declare_parameter(
             "wheel_command_topic", "/lekiwi/wheel_velocity_controller/commands"
         )
         self.declare_parameter("publish_rate_hz", 50.0)
         self.declare_parameter("command_timeout_s", 0.5)
+        self.declare_parameter("linear_deadband_m_s", 0.01)
+        self.declare_parameter("angular_deadband_rad_s", 0.05)
         self.declare_parameter("wheel_radius_m", 0.05)
-        self.declare_parameter("robot_radius_m", 0.08)
-        self.declare_parameter("wheel_angles_deg", [0.0, 120.0, 240.0])
+        self.declare_parameter("robot_radius_m", 0.125)
+        self.declare_parameter("wheel_angles_deg", [60.0, 180.0, 300.0])
         self.declare_parameter("wheel_signs", [1.0, 1.0, 1.0])
         self.declare_parameter("max_wheel_speed_rad_s", 0.0)
 
         self._wheel_angles_rad = self._load_triplet_parameter(
-            "wheel_angles_deg", [0.0, 120.0, 240.0], math.radians
+            "wheel_angles_deg", [60.0, 180.0, 300.0], math.radians
         )
         self._wheel_signs = self._load_triplet_parameter(
             "wheel_signs", [1.0, 1.0, 1.0], float
@@ -38,8 +44,8 @@ class LeKiwiCmdVelToWheelVelocity(Node):
 
         self._robot_radius_m = float(self.get_parameter("robot_radius_m").value)
         if self._robot_radius_m < 0.0:
-            self.get_logger().warn("robot_radius_m < 0.0, forcing to 0.08")
-            self._robot_radius_m = 0.08
+            self.get_logger().warn("robot_radius_m < 0.0, forcing to 0.125")
+            self._robot_radius_m = 0.125
 
         self._max_wheel_speed_rad_s = float(
             self.get_parameter("max_wheel_speed_rad_s").value
@@ -52,6 +58,20 @@ class LeKiwiCmdVelToWheelVelocity(Node):
         if self._command_timeout_s < 0.0:
             self.get_logger().warn("command_timeout_s < 0.0, forcing to 0.0")
             self._command_timeout_s = 0.0
+
+        self._linear_deadband_m_s = float(
+            self.get_parameter("linear_deadband_m_s").value
+        )
+        if self._linear_deadband_m_s < 0.0:
+            self.get_logger().warn("linear_deadband_m_s < 0.0, forcing to 0.01")
+            self._linear_deadband_m_s = 0.01
+
+        self._angular_deadband_rad_s = float(
+            self.get_parameter("angular_deadband_rad_s").value
+        )
+        if self._angular_deadband_rad_s < 0.0:
+            self.get_logger().warn("angular_deadband_rad_s < 0.0, forcing to 0.05")
+            self._angular_deadband_rad_s = 0.05
 
         cmd_vel_topic = str(self.get_parameter("cmd_vel_topic").value)
         wheel_command_topic = str(self.get_parameter("wheel_command_topic").value)
@@ -72,9 +92,29 @@ class LeKiwiCmdVelToWheelVelocity(Node):
             Float64MultiArray, wheel_command_topic, 10
         )
         self.create_timer(1.0 / publish_rate_hz, self._on_timer)
+        self.get_logger().info(
+            "cmd_vel kinematics active (order joint7,joint8,joint9): "
+            f"cmd_vel_topic={cmd_vel_topic}, "
+            f"wheel_angles_deg={[math.degrees(v) for v in self._wheel_angles_rad]}, "
+            f"wheel_signs={self._wheel_signs}, "
+            f"wheel_radius_m={self._wheel_radius_m}, robot_radius_m={self._robot_radius_m}, "
+            f"linear_deadband_m_s={self._linear_deadband_m_s}, "
+            f"angular_deadband_rad_s={self._angular_deadband_rad_s}"
+        )
 
     def _load_triplet_parameter(self, name: str, fallback, cast):
-        raw = list(self.get_parameter(name).value)
+        value = self.get_parameter(name).value
+        raw = value
+        if isinstance(value, str):
+            text = value.strip()
+            try:
+                raw = ast.literal_eval(text)
+            except (ValueError, SyntaxError):
+                raw = [part.strip() for part in text.split(",") if part.strip()]
+        if not isinstance(raw, (list, tuple)):
+            self.get_logger().warn(f"{name} is not a list, using {fallback}")
+            return [cast(v) for v in fallback]
+
         if len(raw) != 3:
             self.get_logger().warn(f"{name} size {len(raw)} != 3, using {fallback}")
             return [cast(v) for v in fallback]
@@ -85,12 +125,26 @@ class LeKiwiCmdVelToWheelVelocity(Node):
             return [cast(v) for v in fallback]
 
     def _on_cmd_vel(self, msg: Twist) -> None:
-        self._latest_vx = float(msg.linear.x)
-        self._latest_vy = float(msg.linear.y)
-        self._latest_wz = float(msg.angular.z)
+        self._latest_vx = self._apply_deadband(
+            float(msg.linear.x), self._linear_deadband_m_s
+        )
+        self._latest_vy = self._apply_deadband(
+            float(msg.linear.y), self._linear_deadband_m_s
+        )
+        self._latest_wz = self._apply_deadband(
+            float(msg.angular.z), self._angular_deadband_rad_s
+        )
         self._last_cmd_time = self.get_clock().now()
         self._has_received_cmd = True
         self._timeout_zero_sent = False
+
+    @staticmethod
+    def _apply_deadband(value: float, deadband: float) -> float:
+        if deadband <= 0.0:
+            return value
+        if abs(value) < deadband:
+            return 0.0
+        return value
 
     def _is_command_fresh(self, now_clock) -> bool:
         if self._last_cmd_time is None:
@@ -101,10 +155,12 @@ class LeKiwiCmdVelToWheelVelocity(Node):
         return dt_s <= self._command_timeout_s
 
     def _twist_to_wheel_speeds(self, vx: float, vy: float, wz: float):
+        # ROS body-frame convention: +x forward, +y left, +wz CCW.
+        # alpha is measured from +x in CCW direction.
         wheel_speeds = []
         for wheel_angle, wheel_sign in zip(self._wheel_angles_rad, self._wheel_signs):
             speed = (
-                (-math.sin(wheel_angle) * vx)
+                (math.sin(wheel_angle) * vx)
                 + (math.cos(wheel_angle) * vy)
                 + (self._robot_radius_m * wz)
             ) / self._wheel_radius_m

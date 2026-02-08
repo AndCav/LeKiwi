@@ -40,7 +40,7 @@ ARGUMENTS = [
     ),
     DeclareLaunchArgument(
         "headless",
-        default_value="false",
+        default_value="true",
         description="Run Isaac Sim headless [true/false].",
     ),
     DeclareLaunchArgument(
@@ -58,7 +58,7 @@ ARGUMENTS = [
     DeclareLaunchArgument("robot_name", default_value="lekiwi", description="Robot name label."),
     DeclareLaunchArgument("x", default_value="0.0", description="Spawn X [m]."),
     DeclareLaunchArgument("y", default_value="0.0", description="Spawn Y [m]."),
-    DeclareLaunchArgument("z", default_value="0.2", description="Spawn Z [m]."),
+    DeclareLaunchArgument("z", default_value="0.0", description="Spawn Z [m]."),
     DeclareLaunchArgument("roll", default_value="0.0", description="Spawn roll [rad]."),
     DeclareLaunchArgument("pitch", default_value="0.0", description="Spawn pitch [rad]."),
     DeclareLaunchArgument("yaw", default_value="0.0", description="Spawn yaw [rad]."),
@@ -69,7 +69,7 @@ ARGUMENTS = [
     ),
     DeclareLaunchArgument(
         "use_ros2_control",
-        default_value="false",
+        default_value="true",
         description="Start ros2_control (controller_manager + controllers).",
     ),
     DeclareLaunchArgument(
@@ -79,8 +79,43 @@ ARGUMENTS = [
     ),
     DeclareLaunchArgument(
         "enable_cmd_vel_to_wheel",
-        default_value="false",
+        default_value="true",
         description="Start cmd_vel to wheel velocity translator node.",
+    ),
+    DeclareLaunchArgument(
+        "cmd_vel_topic",
+        default_value="/lekiwi/cmd_vel",
+        description="Twist topic consumed by cmd_vel to wheel translator.",
+    ),
+    DeclareLaunchArgument(
+        "cmd_vel_wheel_angles_deg",
+        default_value="[60.0, 180.0, 300.0]",
+        description="Wheel alphas in degrees for cmd_vel kinematics in joint order [joint7,joint8,joint9].",
+    ),
+    DeclareLaunchArgument(
+        "cmd_vel_wheel_signs",
+        default_value="[1.0, 1.0, 1.0]",
+        description="Wheel direction signs for cmd_vel kinematics in joint order [joint7,joint8,joint9].",
+    ),
+    DeclareLaunchArgument(
+        "cmd_vel_wheel_radius_m",
+        default_value="0.05",
+        description="Wheel radius in meters for cmd_vel kinematics.",
+    ),
+    DeclareLaunchArgument(
+        "cmd_vel_robot_radius_m",
+        default_value="0.125",
+        description="Robot radius in meters for cmd_vel kinematics.",
+    ),
+    DeclareLaunchArgument(
+        "cmd_vel_linear_deadband_m_s",
+        default_value="0.01",
+        description="Deadband for linear cmd_vel x/y components before wheel conversion.",
+    ),
+    DeclareLaunchArgument(
+        "cmd_vel_angular_deadband_rad_s",
+        default_value="0.05",
+        description="Deadband for angular cmd_vel z component before wheel conversion.",
     ),
     DeclareLaunchArgument(
         "wheel_direct_velocity",
@@ -88,6 +123,26 @@ ARGUMENTS = [
         description="Direct wheel velocity in Isaac without ROS wheel topic. "
         "Format: '' (disabled), '3.0' (all wheels), or '3.0,3.0,3.0' "
         "(joint7,joint8,joint9) in rad/s.",
+    ),
+    DeclareLaunchArgument(
+        "debug_disable_roller_collisions",
+        default_value="false",
+        description="Debug: disable collision shapes for omni3 roller links.",
+    ),
+    DeclareLaunchArgument(
+        "debug_disable_rim_collisions",
+        default_value="false",
+        description="Debug: disable collision shapes for omni3 rim links.",
+    ),
+    DeclareLaunchArgument(
+        "debug_disable_all_wheel_collisions",
+        default_value="false",
+        description="Debug: disable collision shapes for all wheel bodies.",
+    ),
+    DeclareLaunchArgument(
+        "startup_brake_seconds",
+        default_value="0.0",
+        description="Duration [s] after Play where base/wheels are clamped to zero. Set > 0 to enable startup drift suppression.",
     ),
     DeclareLaunchArgument(
         "use_rviz",
@@ -102,7 +157,7 @@ ARGUMENTS = [
     DeclareLaunchArgument(
         "rviz_config",
         default_value=PathJoinSubstitution(
-            [FindPackageShare("lekiwi"), "rviz", "lekiwi.rviz"]
+            [FindPackageShare("lekiwi"), "rviz", "lekiwi_world_simple.rviz"]
         ),
         description="RViz2 config file.",
     ),
@@ -147,7 +202,18 @@ def generate_launch_description():
     use_ros2_control = LaunchConfiguration("use_ros2_control")
     enable_wheel_velocity_bridge = LaunchConfiguration("enable_wheel_velocity_bridge")
     enable_cmd_vel_to_wheel = LaunchConfiguration("enable_cmd_vel_to_wheel")
+    cmd_vel_topic = LaunchConfiguration("cmd_vel_topic")
+    cmd_vel_wheel_angles_deg = LaunchConfiguration("cmd_vel_wheel_angles_deg")
+    cmd_vel_wheel_signs = LaunchConfiguration("cmd_vel_wheel_signs")
+    cmd_vel_wheel_radius_m = LaunchConfiguration("cmd_vel_wheel_radius_m")
+    cmd_vel_robot_radius_m = LaunchConfiguration("cmd_vel_robot_radius_m")
+    cmd_vel_linear_deadband_m_s = LaunchConfiguration("cmd_vel_linear_deadband_m_s")
+    cmd_vel_angular_deadband_rad_s = LaunchConfiguration("cmd_vel_angular_deadband_rad_s")
     wheel_direct_velocity = LaunchConfiguration("wheel_direct_velocity")
+    debug_disable_roller_collisions = LaunchConfiguration("debug_disable_roller_collisions")
+    debug_disable_rim_collisions = LaunchConfiguration("debug_disable_rim_collisions")
+    debug_disable_all_wheel_collisions = LaunchConfiguration("debug_disable_all_wheel_collisions")
+    startup_brake_seconds = LaunchConfiguration("startup_brake_seconds")
     use_rviz = LaunchConfiguration("use_rviz")
     use_joint_state_publisher = LaunchConfiguration("use_joint_state_publisher")
     rviz_config = LaunchConfiguration("rviz_config")
@@ -194,6 +260,14 @@ def generate_launch_description():
             fix_base,
             "--wheel-direct-velocity",
             wheel_direct_velocity,
+            "--debug-disable-roller-collisions",
+            debug_disable_roller_collisions,
+            "--debug-disable-rim-collisions",
+            debug_disable_rim_collisions,
+            "--debug-disable-all-wheel-collisions",
+            debug_disable_all_wheel_collisions,
+            "--startup-brake-seconds",
+            startup_brake_seconds,
             "--ros-package-path",
             ros_package_path,
         ],
@@ -262,6 +336,13 @@ def generate_launch_description():
         output="screen",
         parameters=[
             {"use_sim_time": use_sim_time},
+            {"cmd_vel_topic": cmd_vel_topic},
+            {"wheel_angles_deg": cmd_vel_wheel_angles_deg},
+            {"wheel_signs": cmd_vel_wheel_signs},
+            {"wheel_radius_m": cmd_vel_wheel_radius_m},
+            {"robot_radius_m": cmd_vel_robot_radius_m},
+            {"linear_deadband_m_s": cmd_vel_linear_deadband_m_s},
+            {"angular_deadband_rad_s": cmd_vel_angular_deadband_rad_s},
         ],
         condition=IfCondition(enable_cmd_vel_to_wheel),
     )

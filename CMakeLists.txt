@@ -13,6 +13,10 @@ install(
     DESTINATION share/${PROJECT_NAME})
 
 install(
+  DIRECTORY third_party/omni3ros_pkg
+  DESTINATION share/${PROJECT_NAME}/third_party)
+
+install(
   PROGRAMS
     scripts/lekiwi_cmd_vel_to_wheel_velocity.py
     scripts/lekiwi_joint_command_mux.py

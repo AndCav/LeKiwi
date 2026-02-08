@@ -29,6 +29,15 @@ def _parse_wheel_velocity_arg(raw_value: str):
 
 
 def main() -> int:
+    # Keep defaults internal so launch stays minimal.
+    ground_z = 0.0
+    physics_fps = 240.0
+    physics_substeps = 2
+    physics_min_position_iterations = 8
+    physics_max_position_iterations = 32
+    physics_min_velocity_iterations = 2
+    physics_max_velocity_iterations = 8
+
     parser = argparse.ArgumentParser(description="LeKiwi Isaac Sim URDF runner")
     parser.add_argument("--urdf", required=True, help="Absolute path to LeKiwi URDF")
     parser.add_argument("--headless", default="false", help="Run Isaac Sim headless [true/false]")
@@ -36,7 +45,7 @@ def main() -> int:
     parser.add_argument("--robot-name", default="lekiwi", help="Robot name label")
     parser.add_argument("--x", type=float, default=0.0, help="Spawn X [m]")
     parser.add_argument("--y", type=float, default=0.0, help="Spawn Y [m]")
-    parser.add_argument("--z", type=float, default=0.2, help="Spawn Z [m]")
+    parser.add_argument("--z", type=float, default=0.0, help="Spawn Z [m]")
     parser.add_argument("--roll", type=float, default=0.0, help="Spawn roll [rad]")
     parser.add_argument("--pitch", type=float, default=0.0, help="Spawn pitch [rad]")
     parser.add_argument("--yaw", type=float, default=0.0, help="Spawn yaw [rad]")
@@ -56,9 +65,36 @@ def main() -> int:
         default="",
         help="ROS_PACKAGE_PATH prefix to resolve package:// URDF meshes",
     )
+    parser.add_argument(
+        "--debug-disable-roller-collisions",
+        default="false",
+        help="Debug: disable collision shapes for omni3 roller links [true/false]",
+    )
+    parser.add_argument(
+        "--debug-disable-rim-collisions",
+        default="false",
+        help="Debug: disable collision shapes for omni3 rim links [true/false]",
+    )
+    parser.add_argument(
+        "--debug-disable-all-wheel-collisions",
+        default="false",
+        help="Debug: disable collision shapes for all wheel bodies (roller + rim + legacy single-body) [true/false]",
+    )
+    parser.add_argument(
+        "--startup-brake-seconds",
+        type=float,
+        default=0.0,
+        help="Duration [s] after pressing Play where base/body velocities and wheel targets are clamped to zero. Set >0 to enable.",
+    )
 
     args = parser.parse_args()
     wheel_joint_order = ["joint7", "joint8", "joint9"]
+    startup_brake_seconds = max(0.0, float(args.startup_brake_seconds))
+    debug_disable_roller_collisions = _str_to_bool(args.debug_disable_roller_collisions)
+    debug_disable_rim_collisions = _str_to_bool(args.debug_disable_rim_collisions)
+    debug_disable_all_wheel_collisions = _str_to_bool(
+        args.debug_disable_all_wheel_collisions
+    )
     try:
         direct_wheel_velocity = _parse_wheel_velocity_arg(args.wheel_direct_velocity)
     except ValueError as exc:
@@ -103,6 +139,7 @@ def main() -> int:
     import_config.convex_decomp = _str_to_bool(args.convex_decomp)
     import_config.import_inertia_tensor = True
     # Keep imported links from internally colliding by default.
+    # We also enforce this later on the PhysX articulation API.
     import_config.self_collision = False
     import_config.fix_base = _str_to_bool(args.fix_base)
     import_config.distance_scale = args.distance_scale
@@ -118,6 +155,12 @@ def main() -> int:
     print(f"Articulation prim path: {prim_path}")
 
     stage = omni.usd.get_context().get_stage()
+    import carb
+
+    # Improve contact stability for omni-wheel rollers with fixed timestep + substeps.
+    carb_settings = carb.settings.get_settings()
+    carb_settings.set("/app/player/useFixedTimeStepping", True)
+    carb_settings.set("/app/player/timelineSubsampleRate", physics_substeps)
 
     # Physics scene
     scene = UsdPhysics.Scene.Define(stage, Sdf.Path("/physicsScene"))
@@ -131,10 +174,29 @@ def main() -> int:
     physx_scene.CreateEnableGPUDynamicsAttr(False)
     physx_scene.CreateBroadphaseTypeAttr("MBP")
     physx_scene.CreateSolverTypeAttr("TGS")
+    physx_scene.CreateTimeStepsPerSecondAttr().Set(physics_fps)
+    physx_scene.CreateMinPositionIterationCountAttr().Set(
+        physics_min_position_iterations
+    )
+    physx_scene.CreateMaxPositionIterationCountAttr().Set(
+        physics_max_position_iterations
+    )
+    physx_scene.CreateMinVelocityIterationCountAttr().Set(
+        physics_min_velocity_iterations
+    )
+    physx_scene.CreateMaxVelocityIterationCountAttr().Set(
+        physics_max_velocity_iterations
+    )
+    print(
+        "PhysX tuning: "
+        f"fps={physics_fps}, substeps={physics_substeps}, "
+        f"pos_iters=[{physics_min_position_iterations},{physics_max_position_iterations}], "
+        f"vel_iters=[{physics_min_velocity_iterations},{physics_max_velocity_iterations}]"
+    )
 
     # Ground plane
     PhysicsSchemaTools.addGroundPlane(
-        stage, "/groundPlane", "Z", 1500, Gf.Vec3f(0, 0, -0.25), Gf.Vec3f(0.5)
+        stage, "/groundPlane", "Z", 1500, Gf.Vec3f(0, 0, ground_z), Gf.Vec3f(0.5)
     )
 
     # Basic lighting
@@ -148,14 +210,73 @@ def main() -> int:
         wheel_visual_spin_ops = []
         wheel_visual_spin_angles_deg = {}
         revolute_joint_names = []
-        prim = stage.GetPrimAtPath(prim_path)
-        if prim.IsValid():
-            xform = UsdGeom.XformCommonAPI(prim)
-            xform.SetTranslate((args.x, args.y, args.z))
-            roll_deg = math.degrees(args.roll)
-            pitch_deg = math.degrees(args.pitch)
-            yaw_deg = math.degrees(args.yaw)
-            xform.SetRotate((roll_deg, pitch_deg, yaw_deg), UsdGeom.XformCommonAPI.RotationOrderXYZ)
+        # Apply spawn pose to the robot root xform and auto-correct Z so args.z is the
+        # ground-contact height of the lowest robot point (z=0 => starts on the ground).
+        prim_path_sdf = Sdf.Path(prim_path)
+        parent_path = prim_path_sdf.GetParentPath()
+        spawn_prim = stage.GetPrimAtPath(str(parent_path))
+        if not spawn_prim.IsValid():
+            spawn_prim = stage.GetPrimAtPath(prim_path)
+        if spawn_prim.IsValid():
+            xformable = UsdGeom.Xformable(spawn_prim)
+
+            cr = math.cos(args.roll * 0.5)
+            sr = math.sin(args.roll * 0.5)
+            cp = math.cos(args.pitch * 0.5)
+            sp = math.sin(args.pitch * 0.5)
+            cy = math.cos(args.yaw * 0.5)
+            sy = math.sin(args.yaw * 0.5)
+            quat = Gf.Quatd(
+                (cr * cp * cy) + (sr * sp * sy),
+                Gf.Vec3d(
+                    (sr * cp * cy) - (cr * sp * sy),
+                    (cr * sp * cy) + (sr * cp * sy),
+                    (cr * cp * sy) - (sr * sp * cy),
+                ),
+            )
+
+            def _set_xform_op(op_type, value):
+                for op in xformable.GetOrderedXformOps():
+                    if op.GetOpType() == op_type:
+                        op.Set(value)
+                        return
+                if op_type == UsdGeom.XformOp.TypeTranslate:
+                    xformable.AddTranslateOp().Set(value)
+                elif op_type == UsdGeom.XformOp.TypeOrient:
+                    xformable.AddOrientOp().Set(value)
+
+            initial_t = Gf.Vec3d(float(args.x), float(args.y), float(args.z))
+            _set_xform_op(UsdGeom.XformOp.TypeOrient, quat)
+            _set_xform_op(UsdGeom.XformOp.TypeTranslate, initial_t)
+
+            bbox_cache = UsdGeom.BBoxCache(Usd.TimeCode.Default(), [UsdGeom.Tokens.default_])
+            bounds_before = bbox_cache.ComputeWorldBound(spawn_prim).ComputeAlignedRange()
+            min_before = bounds_before.GetMin()
+            max_before = bounds_before.GetMax()
+            min_z_before = float(min_before[2])
+            max_z_before = float(max_before[2])
+            z_correction = 0.0
+            if math.isfinite(min_z_before) and math.isfinite(max_z_before) and max_z_before >= min_z_before:
+                # Keep requested x/y and ensure the lowest point of the robot is exactly at args.z.
+                z_correction = float(args.z) - min_z_before
+
+            final_t = Gf.Vec3d(float(args.x), float(args.y), float(args.z) + z_correction)
+            _set_xform_op(UsdGeom.XformOp.TypeTranslate, final_t)
+
+            bbox_cache.Clear()
+            bounds_after = bbox_cache.ComputeWorldBound(spawn_prim).ComputeAlignedRange()
+            min_after = bounds_after.GetMin()
+            min_z_after = float(min_after[2])
+
+            world_tf = xformable.ComputeLocalToWorldTransform(Usd.TimeCode.Default())
+            world_t = world_tf.ExtractTranslation()
+            print(
+                "Spawn pose applied on prim "
+                f"{spawn_prim.GetPath()}: x={float(world_t[0]):.4f}, y={float(world_t[1]):.4f}, "
+                f"z={float(world_t[2]):.4f} "
+                f"(input z={args.z:.4f}, auto_correction={z_correction:.4f}, "
+                f"min_z_before={min_z_before:.4f}, min_z_after={min_z_after:.4f})"
+            )
 
         def _get_robot_search_root(stage, robot_prim_path: str):
             root_path = Sdf.Path(robot_prim_path)
@@ -175,11 +296,98 @@ def main() -> int:
                     return str(prim.GetPath())
             return ""
 
+        def _force_disable_articulation_self_collision(stage, robot_prim_path: str):
+            import carb
+
+            root = _get_robot_search_root(stage, robot_prim_path)
+            if not root.IsValid():
+                carb.log_warn(
+                    "Self-collision hard-disable skipped: robot search root is invalid"
+                )
+                return
+
+            updated_paths = []
+            for prim in Usd.PrimRange(root):
+                if not prim.HasAPI(UsdPhysics.ArticulationRootAPI):
+                    continue
+                prim_path = str(prim.GetPath())
+                try:
+                    art_api = PhysxSchema.PhysxArticulationAPI.Apply(prim)
+                    attr = art_api.GetEnabledSelfCollisionsAttr()
+                    if not attr.IsValid():
+                        attr = art_api.CreateEnabledSelfCollisionsAttr()
+                    attr.Set(False)
+                    updated_paths.append(prim_path)
+                except Exception as exc:
+                    carb.log_warn(
+                        "Failed to hard-disable self-collision on "
+                        + prim_path
+                        + ": "
+                        + str(exc)
+                    )
+
+            if updated_paths:
+                carb.log_warn(
+                    "Forced articulation self-collision OFF on: "
+                    + ", ".join(updated_paths)
+                )
+            else:
+                carb.log_warn(
+                    "No articulation root prim found for self-collision hard-disable"
+                )
+
+        def _zero_robot_body_velocities(stage, robot_prim_path: str):
+            root = _get_robot_search_root(stage, robot_prim_path)
+            if not root.IsValid():
+                return
+            for prim in Usd.PrimRange(root):
+                if not prim.HasAPI(UsdPhysics.RigidBodyAPI):
+                    continue
+                rb = UsdPhysics.RigidBodyAPI.Apply(prim)
+                v_attr = rb.GetVelocityAttr()
+                if not v_attr.IsValid():
+                    v_attr = rb.CreateVelocityAttr()
+                v_attr.Set(Gf.Vec3f(0.0, 0.0, 0.0))
+                w_attr = rb.GetAngularVelocityAttr()
+                if not w_attr.IsValid():
+                    w_attr = rb.CreateAngularVelocityAttr()
+                w_attr.Set(Gf.Vec3f(0.0, 0.0, 0.0))
+
+        def _set_debug_collision_enabled(
+            stage, robot_prim_path: str, name_tokens, enabled: bool, label: str
+        ):
+            import carb
+
+            root = _get_robot_search_root(stage, robot_prim_path)
+            if not root.IsValid():
+                carb.log_warn(
+                    f"Collision debug '{label}' skipped: robot search root is invalid"
+                )
+                return
+
+            touched = []
+            for prim in Usd.PrimRange(root):
+                name_lower = prim.GetName().lower()
+                if not any(token in name_lower for token in name_tokens):
+                    continue
+                if not prim.HasAPI(UsdPhysics.CollisionAPI):
+                    continue
+
+                collision_api = UsdPhysics.CollisionAPI.Apply(prim)
+                attr = collision_api.GetCollisionEnabledAttr()
+                if not attr.IsValid():
+                    attr = collision_api.CreateCollisionEnabledAttr()
+                attr.Set(bool(enabled))
+                touched.append(str(prim.GetPath()))
+
+            carb.log_warn(
+                f"Collision debug '{label}': set enabled={enabled} on {len(touched)} prims"
+            )
+
         def _build_ros2_control_graph(
             stage,
             robot_prim_path: str,
             enable_ros_wheel_commands: bool,
-            base_tf_prim_path: str,
         ):
             old_graph_path = f"{robot_prim_path}/ros2_control_graph"
             if stage.GetPrimAtPath(old_graph_path).IsValid():
@@ -195,17 +403,14 @@ def main() -> int:
                 ("sub_js_arm", "isaacsim.ros2.bridge.ROS2SubscribeJointState"),
                 ("art_ctl_arm", "isaacsim.core.nodes.IsaacArticulationController"),
                 ("pub_clock", "isaacsim.ros2.bridge.ROS2PublishClock"),
-                ("pub_tf_base", "isaacsim.ros2.bridge.ROS2PublishTransformTree"),
             ]
             connect = [
                 ("tick.outputs:tick", "pub_js.inputs:execIn"),
                 ("tick.outputs:tick", "sub_js_arm.inputs:execIn"),
                 ("tick.outputs:tick", "art_ctl_arm.inputs:execIn"),
                 ("tick.outputs:tick", "pub_clock.inputs:execIn"),
-                ("tick.outputs:tick", "pub_tf_base.inputs:execIn"),
                 ("sim_time.outputs:simulationTime", "pub_js.inputs:timeStamp"),
                 ("sim_time.outputs:simulationTime", "pub_clock.inputs:timeStamp"),
-                ("sim_time.outputs:simulationTime", "pub_tf_base.inputs:timeStamp"),
                 ("sub_js_arm.outputs:jointNames", "art_ctl_arm.inputs:jointNames"),
                 ("sub_js_arm.outputs:positionCommand", "art_ctl_arm.inputs:positionCommand"),
             ]
@@ -218,8 +423,6 @@ def main() -> int:
                 ("art_ctl_arm.inputs:robotPath", robot_prim_path),
                 ("pub_clock.inputs:nodeNamespace", ""),
                 ("pub_clock.inputs:topicName", "/clock"),
-                ("pub_tf_base.inputs:nodeNamespace", ""),
-                ("pub_tf_base.inputs:topicName", "/tf"),
             ]
             if enable_ros_wheel_commands:
                 create_nodes.extend(
@@ -254,28 +457,6 @@ def main() -> int:
             )
             import carb
 
-            if base_tf_prim_path:
-                try:
-                    from isaacsim.core.nodes.scripts.utils import set_target_prims
-
-                    set_target_prims(
-                        primPath=f"{graph_path}/pub_tf_base",
-                        inputName="inputs:targetPrims",
-                        targetPrimPaths=[base_tf_prim_path],
-                    )
-                    carb.log_warn(
-                        f"Publishing world/base TF from Isaac prim: {base_tf_prim_path}"
-                    )
-                except Exception as exc:
-                    carb.log_warn(
-                        "Failed to configure world/base TF publisher: "
-                        + str(exc)
-                    )
-            else:
-                carb.log_warn(
-                    "base_link prim not found; RViz global-frame visualization may be limited"
-                )
-
             carb.log_warn(f"LeKiwi Isaac script: {__file__}")
             carb.log_warn(f"ROS2 control graph created at {graph_path}")
             if enable_ros_wheel_commands:
@@ -289,7 +470,7 @@ def main() -> int:
             wheel_joints = {"joint7", "joint8", "joint9"}
             # Keep wheel joints in velocity-drive mode (no position spring pullback).
             wheel_stiffness = 0.0
-            wheel_damping = 200.0
+            wheel_damping = 2.0e3
             arm_joints = {
                 "STS3215_03a_v1_Revolute_45",
                 "STS3215_03a_v1_1_Revolute_49",
@@ -343,6 +524,12 @@ def main() -> int:
                             wheel_target_positions_deg[name] = float(
                                 current_target_position
                             )
+                        else:
+                            target_velocity_attr = drive.GetTargetVelocityAttr()
+                            if not target_velocity_attr.IsValid():
+                                target_velocity_attr = drive.CreateTargetVelocityAttr()
+                            target_velocity_attr.Set(0.0)
+                            wheel_target_velocity_attrs[name] = target_velocity_attr
                     elif name in arm_joints:
                         drive.GetStiffnessAttr().Set(arm_stiffness)
                         drive.GetDampingAttr().Set(arm_damping)
@@ -357,18 +544,28 @@ def main() -> int:
 
             for prim in Usd.PrimRange(root):
                 name_lower = prim.GetName().lower()
-                if "omni_directional_wheel_single_body" not in name_lower:
+                joint_name = None
+                if "omni3_rim_joint" in name_lower:
+                    if "joint8" in name_lower:
+                        joint_name = "joint8"
+                    elif "joint9" in name_lower:
+                        joint_name = "joint9"
+                    elif "joint7" in name_lower:
+                        joint_name = "joint7"
+                    else:
+                        continue
+                elif "omni_directional_wheel_single_body" in name_lower:
+                    if "_v1_2" in name_lower:
+                        joint_name = "joint8"
+                    elif "_v1_1" in name_lower:
+                        joint_name = "joint9"
+                    else:
+                        joint_name = "joint7"
+                else:
                     continue
                 if not prim.IsA(UsdGeom.Xform):
                     continue
 
-                # Pick joint mapping from wheel link suffix.
-                if "_v1_2" in name_lower:
-                    joint_name = "joint8"
-                elif "_v1_1" in name_lower:
-                    joint_name = "joint9"
-                else:
-                    joint_name = "joint7"
                 if enabled_joint_names is not None and joint_name not in enabled_joint_names:
                     continue
 
@@ -384,12 +581,48 @@ def main() -> int:
                 wheel_visual_spin_ops.append((joint_name, spin_op))
                 wheel_visual_spin_angles_deg[spin_op] = 0.0
 
+        _force_disable_articulation_self_collision(stage, prim_path)
+        _zero_robot_body_velocities(stage, prim_path)
+        if debug_disable_all_wheel_collisions:
+            _set_debug_collision_enabled(
+                stage,
+                prim_path,
+                ["omni3_roller_", "omni3_rim_joint", "omni_directional_wheel_single_body"],
+                False,
+                "all-wheel-collisions",
+            )
+        else:
+            if debug_disable_roller_collisions:
+                _set_debug_collision_enabled(
+                    stage,
+                    prim_path,
+                    ["omni3_roller_"],
+                    False,
+                    "roller-collisions",
+                )
+            if debug_disable_rim_collisions:
+                _set_debug_collision_enabled(
+                    stage,
+                    prim_path,
+                    ["omni3_rim_joint", "omni_directional_wheel_single_body"],
+                    False,
+                    "rim-collisions",
+                )
         _tune_joint_drives(stage, prim_path)
+        if enable_ros_features:
+            if wheel_target_velocity_attrs:
+                print(
+                    "Wheel joints configured for startup brake: "
+                    + ", ".join(sorted(wheel_target_velocity_attrs.keys()))
+                )
+            else:
+                print(
+                    "Warning: no wheel joints detected for startup brake",
+                    file=sys.stderr,
+                )
         base_tf_prim_path = _find_base_link_prim_path(stage, prim_path)
         if enable_ros_features:
-            _build_ros2_control_graph(
-                stage, prim_path, True, base_tf_prim_path
-            )
+            _build_ros2_control_graph(stage, prim_path, True)
         else:
             print("Direct wheel mode: ROS2 graph disabled")
 
@@ -426,9 +659,28 @@ def main() -> int:
 
     try:
         last_wall_time = time.perf_counter()
+        startup_brake_end_wall_time = None
         while kit.is_running():
+            now_wall_time = time.perf_counter()
+            if (
+                prim_path
+                and startup_brake_seconds > 0.0
+                and timeline.is_playing()
+            ):
+                if startup_brake_end_wall_time is None:
+                    startup_brake_end_wall_time = (
+                        now_wall_time + startup_brake_seconds
+                    )
+                    print(
+                        f"Startup brake active for {startup_brake_seconds:.2f}s after Play"
+                    )
+                if now_wall_time <= startup_brake_end_wall_time:
+                    _zero_robot_body_velocities(stage, prim_path)
+                    for velocity_attr in wheel_target_velocity_attrs.values():
+                        if velocity_attr is not None and velocity_attr.IsValid():
+                            velocity_attr.Set(0.0)
+
             if direct_wheel_velocity is not None:
-                now_wall_time = time.perf_counter()
                 dt_s = max(0.0, min(0.1, now_wall_time - last_wall_time))
                 last_wall_time = now_wall_time
                 for joint_name, target_velocity_rad_s in zip(
@@ -466,6 +718,8 @@ def main() -> int:
                         )
                     except Exception:
                         pass
+            else:
+                last_wall_time = now_wall_time
             kit.update()
     finally:
         timeline.stop()

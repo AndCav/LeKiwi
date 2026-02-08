@@ -118,19 +118,6 @@
             <mass value="1.3542854082324305" />
             <inertia ixx="0.0010936167993003225" iyy="0.0018798127501507863" izz="0.0010936140861738455" ixy="-4.1677764986761383e-10" iyz="8.101180750536008e-12" ixz="-6.83978047246436e-09" />
         </inertial>
-        <visual name="4-Omni-Directional-Wheel_Single_Body-v1-2_visual">
-            <origin xyz="7.450578487500081e-12 0.015874999999999986 6.661338147750939e-18" rpy="1.5707963267948966 0.26179938779914924 -1.0046485565123013e-33" />
-            <geometry>
-                <mesh filename="package://lekiwi/urdf/meshes/4-Omni-Directional-Wheel_Single_Body-v1-2.stl" scale="0.001 0.001 0.001" />
-            </geometry>
-            <material name="lekiwi_mat_wheel_black" />
-        </visual>
-        <collision name="4-Omni-Directional-Wheel_Single_Body-v1-2_collision">
-            <origin xyz="7.450578487500081e-12 0.015874999999999986 6.661338147750939e-18" rpy="1.5707963267948966 0.26179938779914924 -1.0046485565123013e-33" />
-            <geometry>
-                <mesh filename="package://lekiwi/urdf/meshes/4-Omni-Directional-Wheel_Single_Body-v1-2.stl" scale="0.001 0.001 0.001" />
-            </geometry>
-        </collision>
     </link>
     <link name="omni_wheel_mount-v5-2">
         <inertial>
@@ -218,19 +205,6 @@
             <mass value="1.3542854082324305" />
             <inertia ixx="0.0016832621879788534" iyy="0.0012901614102005313" izz="0.0010936200374455259" ixy="-0.0003404354598931583" iyz="-4.340089721204671e-09" ixz="-2.9730281413814508e-09" />
         </inertial>
-        <visual name="4-Omni-Directional-Wheel_Single_Body-v1-1_visual">
-            <origin xyz="0.013748155931950041 -0.007937495502761073 -2.2204460492503132e-17" rpy="-0.5235987755982988 -1.5707963267948963 0" />
-            <geometry>
-                <mesh filename="package://lekiwi/urdf/meshes/4-Omni-Directional-Wheel_Single_Body-v1-1.stl" scale="0.001 0.001 0.001" />
-            </geometry>
-            <material name="lekiwi_mat_wheel_black" />
-        </visual>
-        <collision name="4-Omni-Directional-Wheel_Single_Body-v1-1_collision">
-            <origin xyz="0.013748155931950041 -0.007937495502761073 -2.2204460492503132e-17" rpy="-0.5235987755982988 -1.5707963267948963 0" />
-            <geometry>
-                <mesh filename="package://lekiwi/urdf/meshes/4-Omni-Directional-Wheel_Single_Body-v1-1.stl" scale="0.001 0.001 0.001" />
-            </geometry>
-        </collision>
     </link>
     <link name="drive_motor_mount-v11">
         <inertial>
@@ -294,21 +268,548 @@
     </link>
     <link name="4-Omni-Directional-Wheel_Single_Body-v1">
         <inertial>
-            <origin xyz="-0.013748211804798878 -0.007937431357202592 -9.805855119449092e-08" rpy="0.0 1.0947644252537633e-47 6.865185903486632e-63" />
+            <origin xyz="-0.013748211804798878 -0.007937431357202592 -9.805855119449092e-08" rpy="0.0 -0.0 0.0" />
             <mass value="1.3542854082324305" />
             <inertia ixx="0.00168326307714072" iyy="0.0012901637591839067" izz="0.001093616799300322" ixy="0.00034043401176330265" iyz="6.131812470911233e-09" ixz="-3.0589502042488444e-09" />
         </inertial>
-        <visual name="4-Omni-Directional-Wheel_Single_Body-v1_visual">
-            <origin xyz="-0.013748155616372878 -0.007937504497239081 -5.773159728050814e-17" rpy="1.5707963267948974 -1.3089969389957468 2.094395102393195" />
+    </link>
+    <link name="omni3_rim_joint8">
+        <inertial>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <mass value="0.001" />
+            <inertia ixx="1e-7" iyy="1e-7" izz="1e-7" ixy="0" iyz="0" ixz="0" />
+        </inertial>
+        <visual name="omni3_rim_joint8_visual">
+            <origin xyz="0 0 0" rpy="0 0 0" />
             <geometry>
-                <mesh filename="package://lekiwi/urdf/meshes/4-Omni-Directional-Wheel_Single_Body-v1.stl" scale="0.001 0.001 0.001" />
+                <mesh filename="package://lekiwi/third_party/omni3ros_pkg/mesh/rim.stl" scale="2.857142857 2.857142857 2.857142857" />
             </geometry>
             <material name="lekiwi_mat_wheel_black" />
         </visual>
-        <collision name="4-Omni-Directional-Wheel_Single_Body-v1_collision">
-            <origin xyz="-0.013748155616372878 -0.007937504497239081 -5.773159728050814e-17" rpy="1.5707963267948974 -1.3089969389957468 2.094395102393195" />
+        <collision name="omni3_rim_joint8_collision">
+            <origin xyz="0 0 0" rpy="0 0 0" />
             <geometry>
-                <mesh filename="package://lekiwi/urdf/meshes/4-Omni-Directional-Wheel_Single_Body-v1.stl" scale="0.001 0.001 0.001" />
+                <mesh filename="package://lekiwi/third_party/omni3ros_pkg/mesh/rim.stl" scale="2.857142857 2.857142857 2.857142857" />
+            </geometry>
+        </collision>
+    </link>
+    <link name="omni3_roller_e_joint8">
+        <inertial>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <mass value="0.002" />
+            <inertia ixx="1e-7" iyy="1e-7" izz="1e-7" ixy="0" iyz="0" ixz="0" />
+        </inertial>
+        <visual name="omni3_roller_e_joint8_visual">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="package://lekiwi/third_party/omni3ros_pkg/mesh/roller.stl" scale="2.857142857 2.857142857 2.857142857" />
+            </geometry>
+            <material name="lekiwi_mat_wheel_black" />
+        </visual>
+        <collision name="omni3_roller_e_joint8_collision">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="package://lekiwi/third_party/omni3ros_pkg/mesh/roller.stl" scale="2.857142857 2.857142857 2.857142857" />
+            </geometry>
+        </collision>
+    </link>
+    <link name="omni3_roller_ne_joint8">
+        <inertial>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <mass value="0.002" />
+            <inertia ixx="1e-7" iyy="1e-7" izz="1e-7" ixy="0" iyz="0" ixz="0" />
+        </inertial>
+        <visual name="omni3_roller_ne_joint8_visual">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="package://lekiwi/third_party/omni3ros_pkg/mesh/roller.stl" scale="2.857142857 2.857142857 2.857142857" />
+            </geometry>
+            <material name="lekiwi_mat_wheel_black" />
+        </visual>
+        <collision name="omni3_roller_ne_joint8_collision">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="package://lekiwi/third_party/omni3ros_pkg/mesh/roller.stl" scale="2.857142857 2.857142857 2.857142857" />
+            </geometry>
+        </collision>
+    </link>
+    <link name="omni3_roller_n_joint8">
+        <inertial>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <mass value="0.002" />
+            <inertia ixx="1e-7" iyy="1e-7" izz="1e-7" ixy="0" iyz="0" ixz="0" />
+        </inertial>
+        <visual name="omni3_roller_n_joint8_visual">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="package://lekiwi/third_party/omni3ros_pkg/mesh/roller.stl" scale="2.857142857 2.857142857 2.857142857" />
+            </geometry>
+            <material name="lekiwi_mat_wheel_black" />
+        </visual>
+        <collision name="omni3_roller_n_joint8_collision">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="package://lekiwi/third_party/omni3ros_pkg/mesh/roller.stl" scale="2.857142857 2.857142857 2.857142857" />
+            </geometry>
+        </collision>
+    </link>
+    <link name="omni3_roller_nw_joint8">
+        <inertial>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <mass value="0.002" />
+            <inertia ixx="1e-7" iyy="1e-7" izz="1e-7" ixy="0" iyz="0" ixz="0" />
+        </inertial>
+        <visual name="omni3_roller_nw_joint8_visual">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="package://lekiwi/third_party/omni3ros_pkg/mesh/roller.stl" scale="2.857142857 2.857142857 2.857142857" />
+            </geometry>
+            <material name="lekiwi_mat_wheel_black" />
+        </visual>
+        <collision name="omni3_roller_nw_joint8_collision">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="package://lekiwi/third_party/omni3ros_pkg/mesh/roller.stl" scale="2.857142857 2.857142857 2.857142857" />
+            </geometry>
+        </collision>
+    </link>
+    <link name="omni3_roller_w_joint8">
+        <inertial>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <mass value="0.002" />
+            <inertia ixx="1e-7" iyy="1e-7" izz="1e-7" ixy="0" iyz="0" ixz="0" />
+        </inertial>
+        <visual name="omni3_roller_w_joint8_visual">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="package://lekiwi/third_party/omni3ros_pkg/mesh/roller.stl" scale="2.857142857 2.857142857 2.857142857" />
+            </geometry>
+            <material name="lekiwi_mat_wheel_black" />
+        </visual>
+        <collision name="omni3_roller_w_joint8_collision">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="package://lekiwi/third_party/omni3ros_pkg/mesh/roller.stl" scale="2.857142857 2.857142857 2.857142857" />
+            </geometry>
+        </collision>
+    </link>
+    <link name="omni3_roller_sw_joint8">
+        <inertial>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <mass value="0.002" />
+            <inertia ixx="1e-7" iyy="1e-7" izz="1e-7" ixy="0" iyz="0" ixz="0" />
+        </inertial>
+        <visual name="omni3_roller_sw_joint8_visual">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="package://lekiwi/third_party/omni3ros_pkg/mesh/roller.stl" scale="2.857142857 2.857142857 2.857142857" />
+            </geometry>
+            <material name="lekiwi_mat_wheel_black" />
+        </visual>
+        <collision name="omni3_roller_sw_joint8_collision">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="package://lekiwi/third_party/omni3ros_pkg/mesh/roller.stl" scale="2.857142857 2.857142857 2.857142857" />
+            </geometry>
+        </collision>
+    </link>
+    <link name="omni3_roller_s_joint8">
+        <inertial>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <mass value="0.002" />
+            <inertia ixx="1e-7" iyy="1e-7" izz="1e-7" ixy="0" iyz="0" ixz="0" />
+        </inertial>
+        <visual name="omni3_roller_s_joint8_visual">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="package://lekiwi/third_party/omni3ros_pkg/mesh/roller.stl" scale="2.857142857 2.857142857 2.857142857" />
+            </geometry>
+            <material name="lekiwi_mat_wheel_black" />
+        </visual>
+        <collision name="omni3_roller_s_joint8_collision">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="package://lekiwi/third_party/omni3ros_pkg/mesh/roller.stl" scale="2.857142857 2.857142857 2.857142857" />
+            </geometry>
+        </collision>
+    </link>
+    <link name="omni3_roller_se_joint8">
+        <inertial>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <mass value="0.002" />
+            <inertia ixx="1e-7" iyy="1e-7" izz="1e-7" ixy="0" iyz="0" ixz="0" />
+        </inertial>
+        <visual name="omni3_roller_se_joint8_visual">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="package://lekiwi/third_party/omni3ros_pkg/mesh/roller.stl" scale="2.857142857 2.857142857 2.857142857" />
+            </geometry>
+            <material name="lekiwi_mat_wheel_black" />
+        </visual>
+        <collision name="omni3_roller_se_joint8_collision">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="package://lekiwi/third_party/omni3ros_pkg/mesh/roller.stl" scale="2.857142857 2.857142857 2.857142857" />
+            </geometry>
+        </collision>
+    </link>
+    <link name="omni3_rim_joint9">
+        <inertial>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <mass value="0.001" />
+            <inertia ixx="1e-7" iyy="1e-7" izz="1e-7" ixy="0" iyz="0" ixz="0" />
+        </inertial>
+        <visual name="omni3_rim_joint9_visual">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="package://lekiwi/third_party/omni3ros_pkg/mesh/rim.stl" scale="2.857142857 2.857142857 2.857142857" />
+            </geometry>
+            <material name="lekiwi_mat_wheel_black" />
+        </visual>
+        <collision name="omni3_rim_joint9_collision">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="package://lekiwi/third_party/omni3ros_pkg/mesh/rim.stl" scale="2.857142857 2.857142857 2.857142857" />
+            </geometry>
+        </collision>
+    </link>
+    <link name="omni3_roller_e_joint9">
+        <inertial>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <mass value="0.002" />
+            <inertia ixx="1e-7" iyy="1e-7" izz="1e-7" ixy="0" iyz="0" ixz="0" />
+        </inertial>
+        <visual name="omni3_roller_e_joint9_visual">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="package://lekiwi/third_party/omni3ros_pkg/mesh/roller.stl" scale="2.857142857 2.857142857 2.857142857" />
+            </geometry>
+            <material name="lekiwi_mat_wheel_black" />
+        </visual>
+        <collision name="omni3_roller_e_joint9_collision">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="package://lekiwi/third_party/omni3ros_pkg/mesh/roller.stl" scale="2.857142857 2.857142857 2.857142857" />
+            </geometry>
+        </collision>
+    </link>
+    <link name="omni3_roller_ne_joint9">
+        <inertial>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <mass value="0.002" />
+            <inertia ixx="1e-7" iyy="1e-7" izz="1e-7" ixy="0" iyz="0" ixz="0" />
+        </inertial>
+        <visual name="omni3_roller_ne_joint9_visual">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="package://lekiwi/third_party/omni3ros_pkg/mesh/roller.stl" scale="2.857142857 2.857142857 2.857142857" />
+            </geometry>
+            <material name="lekiwi_mat_wheel_black" />
+        </visual>
+        <collision name="omni3_roller_ne_joint9_collision">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="package://lekiwi/third_party/omni3ros_pkg/mesh/roller.stl" scale="2.857142857 2.857142857 2.857142857" />
+            </geometry>
+        </collision>
+    </link>
+    <link name="omni3_roller_n_joint9">
+        <inertial>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <mass value="0.002" />
+            <inertia ixx="1e-7" iyy="1e-7" izz="1e-7" ixy="0" iyz="0" ixz="0" />
+        </inertial>
+        <visual name="omni3_roller_n_joint9_visual">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="package://lekiwi/third_party/omni3ros_pkg/mesh/roller.stl" scale="2.857142857 2.857142857 2.857142857" />
+            </geometry>
+            <material name="lekiwi_mat_wheel_black" />
+        </visual>
+        <collision name="omni3_roller_n_joint9_collision">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="package://lekiwi/third_party/omni3ros_pkg/mesh/roller.stl" scale="2.857142857 2.857142857 2.857142857" />
+            </geometry>
+        </collision>
+    </link>
+    <link name="omni3_roller_nw_joint9">
+        <inertial>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <mass value="0.002" />
+            <inertia ixx="1e-7" iyy="1e-7" izz="1e-7" ixy="0" iyz="0" ixz="0" />
+        </inertial>
+        <visual name="omni3_roller_nw_joint9_visual">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="package://lekiwi/third_party/omni3ros_pkg/mesh/roller.stl" scale="2.857142857 2.857142857 2.857142857" />
+            </geometry>
+            <material name="lekiwi_mat_wheel_black" />
+        </visual>
+        <collision name="omni3_roller_nw_joint9_collision">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="package://lekiwi/third_party/omni3ros_pkg/mesh/roller.stl" scale="2.857142857 2.857142857 2.857142857" />
+            </geometry>
+        </collision>
+    </link>
+    <link name="omni3_roller_w_joint9">
+        <inertial>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <mass value="0.002" />
+            <inertia ixx="1e-7" iyy="1e-7" izz="1e-7" ixy="0" iyz="0" ixz="0" />
+        </inertial>
+        <visual name="omni3_roller_w_joint9_visual">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="package://lekiwi/third_party/omni3ros_pkg/mesh/roller.stl" scale="2.857142857 2.857142857 2.857142857" />
+            </geometry>
+            <material name="lekiwi_mat_wheel_black" />
+        </visual>
+        <collision name="omni3_roller_w_joint9_collision">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="package://lekiwi/third_party/omni3ros_pkg/mesh/roller.stl" scale="2.857142857 2.857142857 2.857142857" />
+            </geometry>
+        </collision>
+    </link>
+    <link name="omni3_roller_sw_joint9">
+        <inertial>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <mass value="0.002" />
+            <inertia ixx="1e-7" iyy="1e-7" izz="1e-7" ixy="0" iyz="0" ixz="0" />
+        </inertial>
+        <visual name="omni3_roller_sw_joint9_visual">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="package://lekiwi/third_party/omni3ros_pkg/mesh/roller.stl" scale="2.857142857 2.857142857 2.857142857" />
+            </geometry>
+            <material name="lekiwi_mat_wheel_black" />
+        </visual>
+        <collision name="omni3_roller_sw_joint9_collision">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="package://lekiwi/third_party/omni3ros_pkg/mesh/roller.stl" scale="2.857142857 2.857142857 2.857142857" />
+            </geometry>
+        </collision>
+    </link>
+    <link name="omni3_roller_s_joint9">
+        <inertial>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <mass value="0.002" />
+            <inertia ixx="1e-7" iyy="1e-7" izz="1e-7" ixy="0" iyz="0" ixz="0" />
+        </inertial>
+        <visual name="omni3_roller_s_joint9_visual">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="package://lekiwi/third_party/omni3ros_pkg/mesh/roller.stl" scale="2.857142857 2.857142857 2.857142857" />
+            </geometry>
+            <material name="lekiwi_mat_wheel_black" />
+        </visual>
+        <collision name="omni3_roller_s_joint9_collision">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="package://lekiwi/third_party/omni3ros_pkg/mesh/roller.stl" scale="2.857142857 2.857142857 2.857142857" />
+            </geometry>
+        </collision>
+    </link>
+    <link name="omni3_roller_se_joint9">
+        <inertial>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <mass value="0.002" />
+            <inertia ixx="1e-7" iyy="1e-7" izz="1e-7" ixy="0" iyz="0" ixz="0" />
+        </inertial>
+        <visual name="omni3_roller_se_joint9_visual">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="package://lekiwi/third_party/omni3ros_pkg/mesh/roller.stl" scale="2.857142857 2.857142857 2.857142857" />
+            </geometry>
+            <material name="lekiwi_mat_wheel_black" />
+        </visual>
+        <collision name="omni3_roller_se_joint9_collision">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="package://lekiwi/third_party/omni3ros_pkg/mesh/roller.stl" scale="2.857142857 2.857142857 2.857142857" />
+            </geometry>
+        </collision>
+    </link>
+    <link name="omni3_rim_joint7">
+        <inertial>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <mass value="0.001" />
+            <inertia ixx="1e-7" iyy="1e-7" izz="1e-7" ixy="0" iyz="0" ixz="0" />
+        </inertial>
+        <visual name="omni3_rim_joint7_visual">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="package://lekiwi/third_party/omni3ros_pkg/mesh/rim.stl" scale="2.857142857 2.857142857 2.857142857" />
+            </geometry>
+            <material name="lekiwi_mat_wheel_black" />
+        </visual>
+        <collision name="omni3_rim_joint7_collision">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="package://lekiwi/third_party/omni3ros_pkg/mesh/rim.stl" scale="2.857142857 2.857142857 2.857142857" />
+            </geometry>
+        </collision>
+    </link>
+    <link name="omni3_roller_e_joint7">
+        <inertial>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <mass value="0.002" />
+            <inertia ixx="1e-7" iyy="1e-7" izz="1e-7" ixy="0" iyz="0" ixz="0" />
+        </inertial>
+        <visual name="omni3_roller_e_joint7_visual">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="package://lekiwi/third_party/omni3ros_pkg/mesh/roller.stl" scale="2.857142857 2.857142857 2.857142857" />
+            </geometry>
+            <material name="lekiwi_mat_wheel_black" />
+        </visual>
+        <collision name="omni3_roller_e_joint7_collision">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="package://lekiwi/third_party/omni3ros_pkg/mesh/roller.stl" scale="2.857142857 2.857142857 2.857142857" />
+            </geometry>
+        </collision>
+    </link>
+    <link name="omni3_roller_ne_joint7">
+        <inertial>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <mass value="0.002" />
+            <inertia ixx="1e-7" iyy="1e-7" izz="1e-7" ixy="0" iyz="0" ixz="0" />
+        </inertial>
+        <visual name="omni3_roller_ne_joint7_visual">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="package://lekiwi/third_party/omni3ros_pkg/mesh/roller.stl" scale="2.857142857 2.857142857 2.857142857" />
+            </geometry>
+            <material name="lekiwi_mat_wheel_black" />
+        </visual>
+        <collision name="omni3_roller_ne_joint7_collision">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="package://lekiwi/third_party/omni3ros_pkg/mesh/roller.stl" scale="2.857142857 2.857142857 2.857142857" />
+            </geometry>
+        </collision>
+    </link>
+    <link name="omni3_roller_n_joint7">
+        <inertial>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <mass value="0.002" />
+            <inertia ixx="1e-7" iyy="1e-7" izz="1e-7" ixy="0" iyz="0" ixz="0" />
+        </inertial>
+        <visual name="omni3_roller_n_joint7_visual">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="package://lekiwi/third_party/omni3ros_pkg/mesh/roller.stl" scale="2.857142857 2.857142857 2.857142857" />
+            </geometry>
+            <material name="lekiwi_mat_wheel_black" />
+        </visual>
+        <collision name="omni3_roller_n_joint7_collision">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="package://lekiwi/third_party/omni3ros_pkg/mesh/roller.stl" scale="2.857142857 2.857142857 2.857142857" />
+            </geometry>
+        </collision>
+    </link>
+    <link name="omni3_roller_nw_joint7">
+        <inertial>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <mass value="0.002" />
+            <inertia ixx="1e-7" iyy="1e-7" izz="1e-7" ixy="0" iyz="0" ixz="0" />
+        </inertial>
+        <visual name="omni3_roller_nw_joint7_visual">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="package://lekiwi/third_party/omni3ros_pkg/mesh/roller.stl" scale="2.857142857 2.857142857 2.857142857" />
+            </geometry>
+            <material name="lekiwi_mat_wheel_black" />
+        </visual>
+        <collision name="omni3_roller_nw_joint7_collision">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="package://lekiwi/third_party/omni3ros_pkg/mesh/roller.stl" scale="2.857142857 2.857142857 2.857142857" />
+            </geometry>
+        </collision>
+    </link>
+    <link name="omni3_roller_w_joint7">
+        <inertial>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <mass value="0.002" />
+            <inertia ixx="1e-7" iyy="1e-7" izz="1e-7" ixy="0" iyz="0" ixz="0" />
+        </inertial>
+        <visual name="omni3_roller_w_joint7_visual">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="package://lekiwi/third_party/omni3ros_pkg/mesh/roller.stl" scale="2.857142857 2.857142857 2.857142857" />
+            </geometry>
+            <material name="lekiwi_mat_wheel_black" />
+        </visual>
+        <collision name="omni3_roller_w_joint7_collision">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="package://lekiwi/third_party/omni3ros_pkg/mesh/roller.stl" scale="2.857142857 2.857142857 2.857142857" />
+            </geometry>
+        </collision>
+    </link>
+    <link name="omni3_roller_sw_joint7">
+        <inertial>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <mass value="0.002" />
+            <inertia ixx="1e-7" iyy="1e-7" izz="1e-7" ixy="0" iyz="0" ixz="0" />
+        </inertial>
+        <visual name="omni3_roller_sw_joint7_visual">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="package://lekiwi/third_party/omni3ros_pkg/mesh/roller.stl" scale="2.857142857 2.857142857 2.857142857" />
+            </geometry>
+            <material name="lekiwi_mat_wheel_black" />
+        </visual>
+        <collision name="omni3_roller_sw_joint7_collision">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="package://lekiwi/third_party/omni3ros_pkg/mesh/roller.stl" scale="2.857142857 2.857142857 2.857142857" />
+            </geometry>
+        </collision>
+    </link>
+    <link name="omni3_roller_s_joint7">
+        <inertial>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <mass value="0.002" />
+            <inertia ixx="1e-7" iyy="1e-7" izz="1e-7" ixy="0" iyz="0" ixz="0" />
+        </inertial>
+        <visual name="omni3_roller_s_joint7_visual">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="package://lekiwi/third_party/omni3ros_pkg/mesh/roller.stl" scale="2.857142857 2.857142857 2.857142857" />
+            </geometry>
+            <material name="lekiwi_mat_wheel_black" />
+        </visual>
+        <collision name="omni3_roller_s_joint7_collision">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="package://lekiwi/third_party/omni3ros_pkg/mesh/roller.stl" scale="2.857142857 2.857142857 2.857142857" />
+            </geometry>
+        </collision>
+    </link>
+    <link name="omni3_roller_se_joint7">
+        <inertial>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <mass value="0.002" />
+            <inertia ixx="1e-7" iyy="1e-7" izz="1e-7" ixy="0" iyz="0" ixz="0" />
+        </inertial>
+        <visual name="omni3_roller_se_joint7_visual">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="package://lekiwi/third_party/omni3ros_pkg/mesh/roller.stl" scale="2.857142857 2.857142857 2.857142857" />
+            </geometry>
+            <material name="lekiwi_mat_wheel_black" />
+        </visual>
+        <collision name="omni3_roller_se_joint7_collision">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="package://lekiwi/third_party/omni3ros_pkg/mesh/roller.stl" scale="2.857142857 2.857142857 2.857142857" />
             </geometry>
         </collision>
     </link>
@@ -969,6 +1470,67 @@
         <parent link="omni_wheel_mount-v5-2" />
         <child link="4-Omni-Directional-Wheel_Single_Body-v1-2" />
     </joint>
+    <joint name="omni3_rim_joint8_mount" type="fixed">
+        <origin xyz="7.450578487500081e-12 0.015874999999999986 6.661338147750939e-18" rpy="1.5707963267948966 0.26179938779914924 -1.0046485565123013e-33" />
+        <parent link="4-Omni-Directional-Wheel_Single_Body-v1-2" />
+        <child link="omni3_rim_joint8" />
+    </joint>
+    <joint name="omni3_roller_e_joint8_joint" type="continuous">
+        <origin xyz="0.038714286 0.0 0.015714286" rpy="-1.570796327 0 0" />
+        <parent link="omni3_rim_joint8" />
+        <child link="omni3_roller_e_joint8" />
+        <axis xyz="0 0 1" />
+        <dynamics damping="0.002" friction="0.0" />
+    </joint>
+    <joint name="omni3_roller_ne_joint8_joint" type="continuous">
+        <origin xyz="0.027375134 0.027375134 -0.015714286" rpy="-1.570796327 0 0.785398163" />
+        <parent link="omni3_rim_joint8" />
+        <child link="omni3_roller_ne_joint8" />
+        <axis xyz="0 0 1" />
+        <dynamics damping="0.002" friction="0.0" />
+    </joint>
+    <joint name="omni3_roller_n_joint8_joint" type="continuous">
+        <origin xyz="0.0 0.038714286 0.015714286" rpy="-1.570796327 0 1.570796327" />
+        <parent link="omni3_rim_joint8" />
+        <child link="omni3_roller_n_joint8" />
+        <axis xyz="0 0 1" />
+        <dynamics damping="0.002" friction="0.0" />
+    </joint>
+    <joint name="omni3_roller_nw_joint8_joint" type="continuous">
+        <origin xyz="-0.027375134 0.027375134 -0.015714286" rpy="-1.570796327 0 2.356194490" />
+        <parent link="omni3_rim_joint8" />
+        <child link="omni3_roller_nw_joint8" />
+        <axis xyz="0 0 1" />
+        <dynamics damping="0.002" friction="0.0" />
+    </joint>
+    <joint name="omni3_roller_w_joint8_joint" type="continuous">
+        <origin xyz="-0.038714286 0.0 0.015714286" rpy="-1.570796327 0 3.141592654" />
+        <parent link="omni3_rim_joint8" />
+        <child link="omni3_roller_w_joint8" />
+        <axis xyz="0 0 1" />
+        <dynamics damping="0.002" friction="0.0" />
+    </joint>
+    <joint name="omni3_roller_sw_joint8_joint" type="continuous">
+        <origin xyz="-0.027375134 -0.027375134 -0.015714286" rpy="-1.570796327 0 -2.356194490" />
+        <parent link="omni3_rim_joint8" />
+        <child link="omni3_roller_sw_joint8" />
+        <axis xyz="0 0 1" />
+        <dynamics damping="0.002" friction="0.0" />
+    </joint>
+    <joint name="omni3_roller_s_joint8_joint" type="continuous">
+        <origin xyz="0.0 -0.038714286 0.015714286" rpy="-1.570796327 0 -1.570796327" />
+        <parent link="omni3_rim_joint8" />
+        <child link="omni3_roller_s_joint8" />
+        <axis xyz="0 0 1" />
+        <dynamics damping="0.002" friction="0.0" />
+    </joint>
+    <joint name="omni3_roller_se_joint8_joint" type="continuous">
+        <origin xyz="0.027375134 -0.027375134 -0.015714286" rpy="-1.570796327 0 -0.785398163" />
+        <parent link="omni3_rim_joint8" />
+        <child link="omni3_roller_se_joint8" />
+        <axis xyz="0 0 1" />
+        <dynamics damping="0.002" friction="0.0" />
+    </joint>
     <joint name="joint8" type="continuous">
         <origin xyz="0.010249999999999999 -0.035199999999999995 -0.03275" rpy="-1.5707963267948966 1.5707963267948966 0" />
         <parent link="ST3215_Servo_Motor-v1-2" />
@@ -996,6 +1558,67 @@
         <parent link="omni_wheel_mount-v5-1" />
         <child link="4-Omni-Directional-Wheel_Single_Body-v1-1" />
     </joint>
+    <joint name="omni3_rim_joint9_mount" type="fixed">
+        <origin xyz="0.013748155931950041 -0.007937495502761073 -2.2204460492503132e-17" rpy="-0.5235987755982988 -1.5707963267948963 0" />
+        <parent link="4-Omni-Directional-Wheel_Single_Body-v1-1" />
+        <child link="omni3_rim_joint9" />
+    </joint>
+    <joint name="omni3_roller_e_joint9_joint" type="continuous">
+        <origin xyz="0.038714286 0.0 0.015714286" rpy="-1.570796327 0 0" />
+        <parent link="omni3_rim_joint9" />
+        <child link="omni3_roller_e_joint9" />
+        <axis xyz="0 0 1" />
+        <dynamics damping="0.002" friction="0.0" />
+    </joint>
+    <joint name="omni3_roller_ne_joint9_joint" type="continuous">
+        <origin xyz="0.027375134 0.027375134 -0.015714286" rpy="-1.570796327 0 0.785398163" />
+        <parent link="omni3_rim_joint9" />
+        <child link="omni3_roller_ne_joint9" />
+        <axis xyz="0 0 1" />
+        <dynamics damping="0.002" friction="0.0" />
+    </joint>
+    <joint name="omni3_roller_n_joint9_joint" type="continuous">
+        <origin xyz="0.0 0.038714286 0.015714286" rpy="-1.570796327 0 1.570796327" />
+        <parent link="omni3_rim_joint9" />
+        <child link="omni3_roller_n_joint9" />
+        <axis xyz="0 0 1" />
+        <dynamics damping="0.002" friction="0.0" />
+    </joint>
+    <joint name="omni3_roller_nw_joint9_joint" type="continuous">
+        <origin xyz="-0.027375134 0.027375134 -0.015714286" rpy="-1.570796327 0 2.356194490" />
+        <parent link="omni3_rim_joint9" />
+        <child link="omni3_roller_nw_joint9" />
+        <axis xyz="0 0 1" />
+        <dynamics damping="0.002" friction="0.0" />
+    </joint>
+    <joint name="omni3_roller_w_joint9_joint" type="continuous">
+        <origin xyz="-0.038714286 0.0 0.015714286" rpy="-1.570796327 0 3.141592654" />
+        <parent link="omni3_rim_joint9" />
+        <child link="omni3_roller_w_joint9" />
+        <axis xyz="0 0 1" />
+        <dynamics damping="0.002" friction="0.0" />
+    </joint>
+    <joint name="omni3_roller_sw_joint9_joint" type="continuous">
+        <origin xyz="-0.027375134 -0.027375134 -0.015714286" rpy="-1.570796327 0 -2.356194490" />
+        <parent link="omni3_rim_joint9" />
+        <child link="omni3_roller_sw_joint9" />
+        <axis xyz="0 0 1" />
+        <dynamics damping="0.002" friction="0.0" />
+    </joint>
+    <joint name="omni3_roller_s_joint9_joint" type="continuous">
+        <origin xyz="0.0 -0.038714286 0.015714286" rpy="-1.570796327 0 -1.570796327" />
+        <parent link="omni3_rim_joint9" />
+        <child link="omni3_roller_s_joint9" />
+        <axis xyz="0 0 1" />
+        <dynamics damping="0.002" friction="0.0" />
+    </joint>
+    <joint name="omni3_roller_se_joint9_joint" type="continuous">
+        <origin xyz="0.027375134 -0.027375134 -0.015714286" rpy="-1.570796327 0 -0.785398163" />
+        <parent link="omni3_rim_joint9" />
+        <child link="omni3_roller_se_joint9" />
+        <axis xyz="0 0 1" />
+        <dynamics damping="0.002" friction="0.0" />
+    </joint>
     <joint name="base_plate_layer1-v5_baseplate2left_mount" type="fixed">
         <origin xyz="-0.05928203 0.057320510000000005 0.0" rpy="3.141592653589793 -0.0 0.0" />
         <parent link="base_plate_layer1-v5" />
@@ -1016,6 +1639,67 @@
         <origin xyz="-0.0062137300000000015 0.0 0.003587499999999997" rpy="-1.5707963267948966 5.551115123125802e-17 4.930380657631324e-32" />
         <parent link="omni_wheel_mount-v5" />
         <child link="4-Omni-Directional-Wheel_Single_Body-v1" />
+    </joint>
+    <joint name="omni3_rim_joint7_mount" type="fixed">
+        <origin xyz="-0.013748155616372878 -0.007937504497239081 -5.773159728050814e-17" rpy="1.5707963267948974 -1.3089969389957468 2.094395102393195" />
+        <parent link="4-Omni-Directional-Wheel_Single_Body-v1" />
+        <child link="omni3_rim_joint7" />
+    </joint>
+    <joint name="omni3_roller_e_joint7_joint" type="continuous">
+        <origin xyz="0.038714286 0.0 0.015714286" rpy="-1.570796327 0 0" />
+        <parent link="omni3_rim_joint7" />
+        <child link="omni3_roller_e_joint7" />
+        <axis xyz="0 0 1" />
+        <dynamics damping="0.002" friction="0.0" />
+    </joint>
+    <joint name="omni3_roller_ne_joint7_joint" type="continuous">
+        <origin xyz="0.027375134 0.027375134 -0.015714286" rpy="-1.570796327 0 0.785398163" />
+        <parent link="omni3_rim_joint7" />
+        <child link="omni3_roller_ne_joint7" />
+        <axis xyz="0 0 1" />
+        <dynamics damping="0.002" friction="0.0" />
+    </joint>
+    <joint name="omni3_roller_n_joint7_joint" type="continuous">
+        <origin xyz="0.0 0.038714286 0.015714286" rpy="-1.570796327 0 1.570796327" />
+        <parent link="omni3_rim_joint7" />
+        <child link="omni3_roller_n_joint7" />
+        <axis xyz="0 0 1" />
+        <dynamics damping="0.002" friction="0.0" />
+    </joint>
+    <joint name="omni3_roller_nw_joint7_joint" type="continuous">
+        <origin xyz="-0.027375134 0.027375134 -0.015714286" rpy="-1.570796327 0 2.356194490" />
+        <parent link="omni3_rim_joint7" />
+        <child link="omni3_roller_nw_joint7" />
+        <axis xyz="0 0 1" />
+        <dynamics damping="0.002" friction="0.0" />
+    </joint>
+    <joint name="omni3_roller_w_joint7_joint" type="continuous">
+        <origin xyz="-0.038714286 0.0 0.015714286" rpy="-1.570796327 0 3.141592654" />
+        <parent link="omni3_rim_joint7" />
+        <child link="omni3_roller_w_joint7" />
+        <axis xyz="0 0 1" />
+        <dynamics damping="0.002" friction="0.0" />
+    </joint>
+    <joint name="omni3_roller_sw_joint7_joint" type="continuous">
+        <origin xyz="-0.027375134 -0.027375134 -0.015714286" rpy="-1.570796327 0 -2.356194490" />
+        <parent link="omni3_rim_joint7" />
+        <child link="omni3_roller_sw_joint7" />
+        <axis xyz="0 0 1" />
+        <dynamics damping="0.002" friction="0.0" />
+    </joint>
+    <joint name="omni3_roller_s_joint7_joint" type="continuous">
+        <origin xyz="0.0 -0.038714286 0.015714286" rpy="-1.570796327 0 -1.570796327" />
+        <parent link="omni3_rim_joint7" />
+        <child link="omni3_roller_s_joint7" />
+        <axis xyz="0 0 1" />
+        <dynamics damping="0.002" friction="0.0" />
+    </joint>
+    <joint name="omni3_roller_se_joint7_joint" type="continuous">
+        <origin xyz="0.027375134 -0.027375134 -0.015714286" rpy="-1.570796327 0 -0.785398163" />
+        <parent link="omni3_rim_joint7" />
+        <child link="omni3_roller_se_joint7" />
+        <axis xyz="0 0 1" />
+        <dynamics damping="0.002" friction="0.0" />
     </joint>
     <joint name="base_plate_layer1-v5_Rigid-15" type="fixed">
         <origin xyz="0.0 0.06 0.0" rpy="0.0 -0.0 0.0" />
