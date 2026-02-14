@@ -126,7 +126,6 @@ def main() -> int:
     em = app.get_extension_manager()
     if enable_ros_features:
         em.set_extension_enabled_immediate("isaacsim.ros2.bridge", True)
-        em.set_extension_enabled_immediate("isaacsim.ros2.nodes", True)
         em.set_extension_enabled_immediate("isaacsim.core.nodes", True)
 
     status, import_config = omni.kit.commands.execute("URDFCreateImportConfig")

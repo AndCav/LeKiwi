@@ -1450,6 +1450,8 @@
             </geometry>
         </collision>
     </link>
+    <link name="Center_of_Grip_EE">
+    </link>
     <joint name="base_mount" type="fixed">
         <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 -1.5707963267948966" />
         <parent link="base_link" />
@@ -1852,6 +1854,11 @@
         <child link="Moving_Jaw_08d-v1" />
         <axis xyz="0.0 0.0 1.0" />
         <limit lower="-3.14159" upper="3.14159" effort="10.0" velocity="5.0" />
+    </joint>
+    <joint name="Center_of_Grip_08d-v1_Rigid-58" type="fixed">
+        <origin xyz="-0.012 -0.08212249999999986 -0.024026410000000018" rpy="-2.7052606678110185 0.0 0.0" />
+        <parent link="STS3215_03a-v1-4" />
+        <child link="Center_of_Grip_EE" />
     </joint>
     <joint name="Wrist_Roll_08c-v1_Rigid-58" type="fixed">
         <origin xyz="0.012999999999999998 0.027192599999999983 -0.0015258700000000047" rpy="-1.5707963267948966 -0.0 0.0" />

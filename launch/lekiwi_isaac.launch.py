@@ -13,8 +13,9 @@
 # limitations under the License.
 
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument, ExecuteProcess, SetEnvironmentVariable
+from launch.actions import DeclareLaunchArgument, ExecuteProcess, RegisterEventHandler, SetEnvironmentVariable
 from launch.conditions import IfCondition
+from launch.event_handlers import OnProcessExit
 from launch.substitutions import (
     Command,
     EnvironmentVariable,
@@ -146,7 +147,7 @@ ARGUMENTS = [
     ),
     DeclareLaunchArgument(
         "use_rviz",
-        default_value="false",
+        default_value="true",
         description="Start RViz2 (off by default).",
     ),
     DeclareLaunchArgument(
@@ -163,8 +164,8 @@ ARGUMENTS = [
     ),
     DeclareLaunchArgument(
         "use_sim_time",
-        default_value="true",
-        description="Use /clock if provided by Isaac Sim.",
+        default_value="false",
+        description="Use /clock if provided by Isaac Sim. Off by default so nodes work before Isaac boots.",
     ),
     DeclareLaunchArgument(
         "controllers_file",
@@ -294,6 +295,7 @@ def generate_launch_description():
             {"use_sim_time": use_sim_time},
             {"robot_description": robot_description},
         ],
+        remappings=[("joint_states", "/lekiwi/joint_states")],
     )
 
     control_node = Node(
@@ -306,6 +308,7 @@ def generate_launch_description():
             {"robot_description": robot_description},
             controllers_file,
         ],
+        remappings=[("robot_description", "/robot_description")],
         output="screen",
         condition=IfCondition(use_ros2_control),
     )
@@ -368,7 +371,6 @@ def generate_launch_description():
             "/lekiwi/controller_manager",
         ],
         output="screen",
-        condition=IfCondition(use_ros2_control),
     )
 
     gripper_position_controller_spawner = Node(
@@ -380,7 +382,6 @@ def generate_launch_description():
             "/lekiwi/controller_manager",
         ],
         output="screen",
-        condition=IfCondition(use_ros2_control),
     )
 
     wheel_velocity_controller_spawner = Node(
@@ -392,6 +393,19 @@ def generate_launch_description():
             "/lekiwi/controller_manager",
         ],
         output="screen",
+    )
+
+    # Spawn arm/gripper/wheel controllers only after joint_state_broadcaster
+    # is confirmed active, to avoid race condition on hardware interface init.
+    controllers_after_jsb = RegisterEventHandler(
+        event_handler=OnProcessExit(
+            target_action=joint_state_broadcaster_spawner,
+            on_exit=[
+                arm_position_controller_spawner,
+                gripper_position_controller_spawner,
+                wheel_velocity_controller_spawner,
+            ],
+        ),
         condition=IfCondition(use_ros2_control),
     )
 
@@ -424,9 +438,28 @@ def generate_launch_description():
         condition=IfCondition(use_rviz),
     )
 
+    # # Publishes world→odom (identity) so the robot is localized in a world frame.
+    # static_tf_world_odom_node = Node(
+    #     package="tf2_ros",
+    #     executable="static_transform_publisher",
+    #     arguments=["0", "0", "0", "0", "0", "0", "world", "odom"],
+    #     output="screen",
+    # )
+
+    # # Fallback: keeps robot visible at origin before Isaac publishes real odometry.
+    # # Isaac's dynamic odom→base_link TF (from ROS2PublishOdometry) overrides this once running.
+    # static_tf_odom_base_node = Node(
+    #     package="tf2_ros",
+    #     executable="static_transform_publisher",
+    #     arguments=["0", "0", "0", "0", "0", "0", "odom", "base_link"],
+    #     output="screen",
+    # )
+
     ld = LaunchDescription(ARGUMENTS)
     ld.add_action(ros_pkg_env)
     ld.add_action(python_unbuffered_env)
+    # ld.add_action(static_tf_world_odom_node)
+    # ld.add_action(static_tf_odom_base_node)
     ld.add_action(isaac_sim)
     ld.add_action(robot_state_publisher_node)
     ld.add_action(control_node)
@@ -434,9 +467,7 @@ def generate_launch_description():
     ld.add_action(wheel_velocity_bridge_node)
     ld.add_action(cmd_vel_to_wheel_node)
     ld.add_action(joint_state_broadcaster_spawner)
-    ld.add_action(arm_position_controller_spawner)
-    ld.add_action(gripper_position_controller_spawner)
-    ld.add_action(wheel_velocity_controller_spawner)
+    ld.add_action(controllers_after_jsb)
     ld.add_action(joint_state_publisher_node)
     ld.add_action(rviz_node)
     return ld
