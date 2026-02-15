@@ -1,0 +1,40 @@
+# This config file is used by ros2_control
+controller_manager:
+  ros__parameters:
+    update_rate: 100  # Hz
+
+    arm_controller:
+      type: joint_trajectory_controller/JointTrajectoryController
+
+
+    end_effector_controller:
+      type: joint_trajectory_controller/JointTrajectoryController
+
+
+    joint_state_broadcaster:
+      type: joint_state_broadcaster/JointStateBroadcaster
+
+arm_controller:
+  ros__parameters:
+    joints:
+      - STS3215_03a_v1_Revolute_45
+      - STS3215_03a_v1_1_Revolute_49
+      - STS3215_03a_v1_2_Revolute_51
+      - STS3215_03a_v1_3_Revolute_53
+      - STS3215_03a_Wrist_Roll_v1_Revolute_55
+    command_interfaces:
+      - position
+    state_interfaces:
+      - position
+      - velocity
+    allow_nonzero_velocity_at_trajectory_end: true
+end_effector_controller:
+  ros__parameters:
+    joints:
+      - STS3215_03a_v1_4_Revolute_57
+    command_interfaces:
+      - position
+    state_interfaces:
+      - position
+      - velocity
+    allow_nonzero_velocity_at_trajectory_end: true
