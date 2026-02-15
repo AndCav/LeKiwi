@@ -4,6 +4,85 @@
 - [MoveIt2](https://github.com/moveit/moveit2): a motion planning, manipulation, and kinematics framework
 - [RAI(RobotecAI)](https://github.com/RobotecAI/rai): a flexible AI agent framework to develop and deploy Embodied AI features for your robots
 
+## Repository layout
+
+```
+LeKiwi/                        # git repo root (multi-package)
+├── lekiwi/                    # main ROS 2 package
+│   ├── config/                #   ros2_control xacro, controller YAML
+│   ├── launch/                #   Launch files (Isaac Sim, Gazebo)
+│   ├── scripts/               #   ROS 2 node scripts (mux, bridge, cmd_vel)
+│   ├── urdf/                  #   URDF and mesh files
+│   ├── rviz/                  #   RViz configurations
+│   └── third_party/           #   Vendored omni3 wheel assets
+├── lekiwi_moveit/             # MoveIt2 configuration package
+│   ├── config/                #   SRDF, kinematics, joint limits, controllers
+│   └── launch/                #   move_group, RViz, demo launch files
+└── 3DPrintMeshes/             # CAD/3D printing assets
+```
+
+## Dependencies
+
+### Core (lekiwi)
+
+```
+sudo apt install \
+  ros-${ROS_DISTRO}-ros2-control \
+  ros-${ROS_DISTRO}-ros2-controllers \
+  ros-${ROS_DISTRO}-joint-state-topic-hardware-interface \
+  ros-${ROS_DISTRO}-robot-state-publisher \
+  ros-${ROS_DISTRO}-joint-state-publisher \
+  ros-${ROS_DISTRO}-xacro \
+  ros-${ROS_DISTRO}-ros-gz-sim \
+  ros-${ROS_DISTRO}-ros-gz-bridge
+```
+
+### MoveIt2 (lekiwi_moveit)
+
+```
+sudo apt install \
+  ros-${ROS_DISTRO}-moveit \
+  ros-${ROS_DISTRO}-moveit-configs-utils \
+  ros-${ROS_DISTRO}-moveit-ros-move-group \
+  ros-${ROS_DISTRO}-moveit-kinematics \
+  ros-${ROS_DISTRO}-moveit-planners \
+  ros-${ROS_DISTRO}-moveit-simple-controller-manager \
+  ros-${ROS_DISTRO}-moveit-ros-visualization \
+  ros-${ROS_DISTRO}-warehouse-ros-mongo
+```
+
+### Build
+
+```bash
+cd ~/ros2_ws
+colcon build --packages-select lekiwi lekiwi_moveit
+source install/setup.bash
+```
+
+## MoveIt2 motion planning (Isaac Sim)
+
+Launch Isaac Sim with MoveIt enabled:
+
+```bash
+ros2 launch lekiwi lekiwi_isaac.launch.py \
+  use_ros2_control:=true \
+  enable_wheel_velocity_bridge:=true \
+  use_moveit:=true \
+  moveit_use_rviz:=true \
+  use_rviz:=false
+```
+
+This starts `move_group` with OMPL planning and opens a MoveIt-enabled RViz window. Use the **Planning** tab to plan and execute arm trajectories.
+
+Key MoveIt configuration files live in `lekiwi_moveit/config/`:
+
+| File | Purpose |
+|------|---------|
+| `LeKiwi.srdf` | Planning groups, end-effectors, predefined poses |
+| `kinematics.yaml` | KDL IK solver for the `arm` group |
+| `moveit_controllers.yaml` | Maps MoveIt to ros2_control trajectory controllers |
+| `joint_limits.yaml` | Velocity/acceleration limits and safety scaling |
+
 ## Omni3 wheel assets (vendored third-party)
 
 LeKiwi vendors the omni wheel assets from upstream `omni3ros_pkg` as a normal third-party folder (no submodule, no `.git` metadata):
