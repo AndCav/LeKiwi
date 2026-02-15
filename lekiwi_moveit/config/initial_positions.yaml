@@ -1,0 +1,9 @@
+# Default initial positions for LeKiwi's ros2_control fake system
+
+initial_positions:
+  STS3215_03a_Wrist_Roll_v1_Revolute_55: 0
+  STS3215_03a_v1_1_Revolute_49: 0
+  STS3215_03a_v1_2_Revolute_51: 0
+  STS3215_03a_v1_3_Revolute_53: 0
+  STS3215_03a_v1_4_Revolute_57: 0
+  STS3215_03a_v1_Revolute_45: 0

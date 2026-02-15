@@ -39,7 +39,6 @@ def generate_launch_description():
         ],
         remappings=[
             ("~/robot_description", "/robot_description"),
-            ("~/cmd_vel", "/cmd_vel"),
             ("~/odom", "/odom"),
         ],
     )
@@ -86,17 +85,10 @@ def generate_launch_description():
         ],
     )
 
-    kiwi_controller_spawner = Node(
-        package="controller_manager",
-        executable="spawner",
-        arguments=["kiwi_controller", "--controller-manager", "/controller_manager"],
-    )
-
     return LaunchDescription(
         [
             control_node,
             joint_state_broadcaster_spawner,
-            kiwi_controller_spawner,
             robot_state_publisher_node,
             rviz_node,
         ]

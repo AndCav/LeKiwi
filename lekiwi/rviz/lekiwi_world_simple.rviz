@@ -1,0 +1,709 @@
+Panels:
+  - Class: rviz_common/Displays
+    Help Height: 70
+    Name: Displays
+    Property Tree Widget:
+      Expanded:
+        - /RobotModel1
+        - /TF1
+        - /TF1/Frames1
+      Splitter Ratio: 0.5
+    Tree Height: 383
+  - Class: rviz_common/Selection
+    Name: Selection
+  - Class: rviz_common/Tool Properties
+    Expanded:
+      - /2D Pose Estimate1
+      - /2D Goal Pose1
+      - /Publish Point1
+    Name: Tool Properties
+    Splitter Ratio: 0.5799999833106995
+  - Class: rviz_common/Views
+    Expanded:
+      - /Current View1
+    Name: Views
+    Splitter Ratio: 0.5
+  - Class: rviz_common/Time
+    Experimental: false
+    Name: Time
+    SyncMode: 0
+    SyncSource: ""
+Visualization Manager:
+  Class: ""
+  Displays:
+    - Alpha: 0.5
+      Cell Size: 1
+      Class: rviz_default_plugins/Grid
+      Color: 160; 160; 164
+      Enabled: true
+      Line Style:
+        Line Width: 0.029999999329447746
+        Value: Lines
+      Name: Grid
+      Normal Cell Count: 0
+      Offset:
+        X: 0
+        Y: 0
+        Z: 0
+      Plane: XY
+      Plane Cell Count: 20
+      Reference Frame: <Fixed Frame>
+      Value: true
+    - Alpha: 0.20000000298023224
+      Class: rviz_default_plugins/RobotModel
+      Collision Enabled: false
+      Description File: ""
+      Description Source: Topic
+      Description Topic:
+        Depth: 5
+        Durability Policy: Volatile
+        History Policy: Keep Last
+        Reliability Policy: Reliable
+        Value: /robot_description
+      Enabled: true
+      Links:
+        4-Omni-Directional-Wheel_Single_Body-v1:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        4-Omni-Directional-Wheel_Single_Body-v1-1:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        4-Omni-Directional-Wheel_Single_Body-v1-2:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        94868A713_NO-THREADS_Female-Threaded-Hex-Standoff:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        94868A713_NO-THREADS_Female-Threaded-Hex-Standoff-1:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        94868A713_NO-THREADS_Female-Threaded-Hex-Standoff-2:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        94868A713_NO-THREADS_Female-Threaded-Hex-Standoff-3:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        94868A713_NO-THREADS_Female-Threaded-Hex-Standoff-4:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        94868A713_NO-THREADS_Female-Threaded-Hex-Standoff-5:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        All Links Enabled: true
+        Base_08q-v1:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        Battery---Battery-5.2-Ah-DC5521-Plug-v2:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        Bottom-V2-v3:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        Camera-Model-v3:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        Camera-Model-v3-1:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        Camera-Mount-v8:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        Center_of_Grip_EE:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        Expand Joint Details: false
+        Expand Link Details: false
+        Expand Tree: false
+        Link Tree Style: Links in Alphabetic Order
+        Moving_Jaw_08d-v1:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        Passive_Horn_01-v1:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        Rotation_Pitch_08i-v1:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        SO_ARM100_08k_116_Square-v1:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        SO_ARM100_08k_Asym_Mirror_Clip-v1:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        SO_ARM100_08k_Mirror-v1:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        ST3215_Servo_Motor-v1:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        ST3215_Servo_Motor-v1-1:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        ST3215_Servo_Motor-v1-2:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        STS3215_03a-v1:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        STS3215_03a-v1-1:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        STS3215_03a-v1-2:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        STS3215_03a-v1-3:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        STS3215_03a-v1-4:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        STS3215_03a_Wrist_Roll-v1:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        Top-V2-v2:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        WaveShare_Mounting_Plate_01d-v1:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        Wrist-Camera-Mount-v11:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        Wrist_Roll_08c-v1:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        Wrist_Roll_Pitch_08i-v1:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        base_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        base_plate_layer1-v5:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        base_plate_layer2-v3:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        drive_motor_mount-v11:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        drive_motor_mount-v11-1:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        drive_motor_mount-v11-2:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        lipo_battery_mount-v3:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        omni3_rim_joint7:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        omni3_rim_joint8:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        omni3_rim_joint9:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        omni3_roller_e_joint7:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        omni3_roller_e_joint8:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        omni3_roller_e_joint9:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        omni3_roller_n_joint7:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        omni3_roller_n_joint8:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        omni3_roller_n_joint9:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        omni3_roller_ne_joint7:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        omni3_roller_ne_joint8:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        omni3_roller_ne_joint9:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        omni3_roller_nw_joint7:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        omni3_roller_nw_joint8:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        omni3_roller_nw_joint9:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        omni3_roller_s_joint7:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        omni3_roller_s_joint8:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        omni3_roller_s_joint9:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        omni3_roller_se_joint7:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        omni3_roller_se_joint8:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        omni3_roller_se_joint9:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        omni3_roller_sw_joint7:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        omni3_roller_sw_joint8:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        omni3_roller_sw_joint9:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        omni3_roller_w_joint7:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        omni3_roller_w_joint8:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        omni3_roller_w_joint9:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        omni_wheel_mount-v5:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        omni_wheel_mount-v5-1:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        omni_wheel_mount-v5-2:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        servo_controller_mount-v3:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+      Mass Properties:
+        Inertia: false
+        Mass: false
+      Name: RobotModel
+      TF Prefix: ""
+      Update Interval: 0
+      Value: true
+      Visual Enabled: true
+    - Class: rviz_default_plugins/TF
+      Enabled: true
+      Filter (blacklist): ""
+      Filter (whitelist): ""
+      Frame Timeout: 15
+      Frames:
+        4-Omni-Directional-Wheel_Single_Body-v1:
+          Value: false
+        4-Omni-Directional-Wheel_Single_Body-v1-1:
+          Value: false
+        4-Omni-Directional-Wheel_Single_Body-v1-2:
+          Value: false
+        94868A713_NO-THREADS_Female-Threaded-Hex-Standoff:
+          Value: false
+        94868A713_NO-THREADS_Female-Threaded-Hex-Standoff-1:
+          Value: false
+        94868A713_NO-THREADS_Female-Threaded-Hex-Standoff-2:
+          Value: false
+        94868A713_NO-THREADS_Female-Threaded-Hex-Standoff-3:
+          Value: false
+        94868A713_NO-THREADS_Female-Threaded-Hex-Standoff-4:
+          Value: false
+        94868A713_NO-THREADS_Female-Threaded-Hex-Standoff-5:
+          Value: false
+        All Enabled: false
+        Base_08q-v1:
+          Value: false
+        Battery---Battery-5.2-Ah-DC5521-Plug-v2:
+          Value: false
+        Bottom-V2-v3:
+          Value: false
+        Camera-Model-v3:
+          Value: false
+        Camera-Model-v3-1:
+          Value: false
+        Camera-Mount-v8:
+          Value: false
+        Center_of_Grip_EE:
+          Value: true
+        Moving_Jaw_08d-v1:
+          Value: true
+        Passive_Horn_01-v1:
+          Value: false
+        Rotation_Pitch_08i-v1:
+          Value: false
+        SO_ARM100_08k_116_Square-v1:
+          Value: false
+        SO_ARM100_08k_Asym_Mirror_Clip-v1:
+          Value: false
+        SO_ARM100_08k_Mirror-v1:
+          Value: false
+        ST3215_Servo_Motor-v1:
+          Value: false
+        ST3215_Servo_Motor-v1-1:
+          Value: false
+        ST3215_Servo_Motor-v1-2:
+          Value: false
+        STS3215_03a-v1:
+          Value: false
+        STS3215_03a-v1-1:
+          Value: false
+        STS3215_03a-v1-2:
+          Value: false
+        STS3215_03a-v1-3:
+          Value: false
+        STS3215_03a-v1-4:
+          Value: true
+        STS3215_03a_Wrist_Roll-v1:
+          Value: false
+        Top-V2-v2:
+          Value: false
+        WaveShare_Mounting_Plate_01d-v1:
+          Value: false
+        Wrist-Camera-Mount-v11:
+          Value: false
+        Wrist_Roll_08c-v1:
+          Value: false
+        Wrist_Roll_Pitch_08i-v1:
+          Value: false
+        base_link:
+          Value: false
+        base_plate_layer1-v5:
+          Value: false
+        base_plate_layer2-v3:
+          Value: false
+        drive_motor_mount-v11:
+          Value: false
+        drive_motor_mount-v11-1:
+          Value: false
+        drive_motor_mount-v11-2:
+          Value: false
+        lipo_battery_mount-v3:
+          Value: false
+        omni3_rim_joint7:
+          Value: false
+        omni3_rim_joint8:
+          Value: false
+        omni3_rim_joint9:
+          Value: false
+        omni_wheel_mount-v5:
+          Value: false
+        omni_wheel_mount-v5-1:
+          Value: false
+        omni_wheel_mount-v5-2:
+          Value: false
+        servo_controller_mount-v3:
+          Value: false
+      Marker Scale: 0.25
+      Name: TF
+      Show Arrows: true
+      Show Axes: true
+      Show Names: false
+      Tree:
+        base_link:
+          base_plate_layer1-v5:
+            94868A713_NO-THREADS_Female-Threaded-Hex-Standoff:
+              base_plate_layer2-v3:
+                Base_08q-v1:
+                  Passive_Horn_01-v1:
+                    {}
+                  STS3215_03a-v1:
+                    Rotation_Pitch_08i-v1:
+                      SO_ARM100_08k_Asym_Mirror_Clip-v1:
+                        {}
+                      STS3215_03a-v1-1:
+                        SO_ARM100_08k_116_Square-v1:
+                          STS3215_03a-v1-2:
+                            SO_ARM100_08k_Mirror-v1:
+                              STS3215_03a-v1-3:
+                                Wrist_Roll_Pitch_08i-v1:
+                                  STS3215_03a_Wrist_Roll-v1:
+                                    Wrist_Roll_08c-v1:
+                                      STS3215_03a-v1-4:
+                                        Center_of_Grip_EE:
+                                          {}
+                                        Moving_Jaw_08d-v1:
+                                          {}
+                                      Wrist-Camera-Mount-v11:
+                                        Camera-Model-v3-1:
+                                          {}
+                  WaveShare_Mounting_Plate_01d-v1:
+                    {}
+                Bottom-V2-v3:
+                  Top-V2-v2:
+                    {}
+            94868A713_NO-THREADS_Female-Threaded-Hex-Standoff-1:
+              {}
+            94868A713_NO-THREADS_Female-Threaded-Hex-Standoff-2:
+              {}
+            94868A713_NO-THREADS_Female-Threaded-Hex-Standoff-3:
+              {}
+            94868A713_NO-THREADS_Female-Threaded-Hex-Standoff-4:
+              {}
+            94868A713_NO-THREADS_Female-Threaded-Hex-Standoff-5:
+              {}
+            Camera-Mount-v8:
+              Camera-Model-v3:
+                {}
+            drive_motor_mount-v11:
+              ST3215_Servo_Motor-v1:
+                omni_wheel_mount-v5:
+                  4-Omni-Directional-Wheel_Single_Body-v1:
+                    omni3_rim_joint7:
+                      {}
+            drive_motor_mount-v11-1:
+              ST3215_Servo_Motor-v1-1:
+                omni_wheel_mount-v5-1:
+                  4-Omni-Directional-Wheel_Single_Body-v1-1:
+                    omni3_rim_joint9:
+                      {}
+            drive_motor_mount-v11-2:
+              ST3215_Servo_Motor-v1-2:
+                omni_wheel_mount-v5-2:
+                  4-Omni-Directional-Wheel_Single_Body-v1-2:
+                    omni3_rim_joint8:
+                      {}
+            lipo_battery_mount-v3:
+              Battery---Battery-5.2-Ah-DC5521-Plug-v2:
+                {}
+            servo_controller_mount-v3:
+              {}
+      Update Interval: 0
+      Value: true
+  Enabled: true
+  Global Options:
+    Background Color: 48; 48; 48
+    Fixed Frame: base_link
+    Frame Rate: 30
+  Name: root
+  Tools:
+    - Class: rviz_default_plugins/Interact
+      Hide Inactive Objects: true
+    - Class: rviz_default_plugins/MoveCamera
+    - Class: rviz_default_plugins/Select
+    - Class: rviz_default_plugins/FocusCamera
+    - Class: rviz_default_plugins/Measure
+      Line color: 128; 128; 0
+    - Class: rviz_default_plugins/SetInitialPose
+      Covariance x: 0.25
+      Covariance y: 0.25
+      Covariance yaw: 0.06853891909122467
+      Topic:
+        Depth: 5
+        Durability Policy: Volatile
+        History Policy: Keep Last
+        Reliability Policy: Reliable
+        Value: /initialpose
+    - Class: rviz_default_plugins/SetGoal
+      Topic:
+        Depth: 5
+        Durability Policy: Volatile
+        History Policy: Keep Last
+        Reliability Policy: Reliable
+        Value: /goal_pose
+    - Class: rviz_default_plugins/PublishPoint
+      Single click: true
+      Topic:
+        Depth: 5
+        Durability Policy: Volatile
+        History Policy: Keep Last
+        Reliability Policy: Reliable
+        Value: /clicked_point
+  Transformation:
+    Current:
+      Class: rviz_default_plugins/TF
+  Value: true
+  Views:
+    Current:
+      Class: rviz_default_plugins/Orbit
+      Distance: 0.7393712401390076
+      Enable Stereo Rendering:
+        Stereo Eye Separation: 0.05999999865889549
+        Stereo Focal Distance: 1
+        Swap Stereo Eyes: false
+        Value: false
+      Focal Point:
+        X: 0
+        Y: 0
+        Z: 0.20000000298023224
+      Focal Shape Fixed Size: true
+      Focal Shape Size: 0.05000000074505806
+      Invert Z Axis: false
+      Name: Current View
+      Near Clip Distance: 0.009999999776482582
+      Pitch: 0.6000000238418579
+      Target Frame: base_link
+      Value: Orbit (rviz_default_plugins)
+      Yaw: 0.699999988079071
+    Saved: ~
+Window Geometry:
+  Displays:
+    collapsed: false
+  Height: 900
+  Hide Left Dock: false
+  Hide Right Dock: false
+  QMainWindow State: 000000ff00000000fd000000030000000000000156000002ebfc0200000003fb000000100044006900730070006c006100790073010000003d00000202000000c900fffffffb0000001200530065006c0065006300740069006f006e0100000245000000640000005c00fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007301000002af000000790000005c00ffffff0000000100000169000002ebfc0200000001fb0000000a00560069006500770073010000003d000002eb000000a400ffffff000000030000057800000039fc0100000001fb0000000800540069006d00650100000000000005780000026f00ffffff000002ad000002eb00000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
+  Selection:
+    collapsed: false
+  Time:
+    collapsed: false
+  Tool Properties:
+    collapsed: false
+  Views:
+    collapsed: false
+  Width: 1400
+  X: 433
+  Y: 60
