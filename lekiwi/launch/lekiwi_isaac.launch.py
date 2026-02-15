@@ -13,9 +13,16 @@
 # limitations under the License.
 
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument, ExecuteProcess, RegisterEventHandler, SetEnvironmentVariable
+from launch.actions import (
+    DeclareLaunchArgument,
+    ExecuteProcess,
+    IncludeLaunchDescription,
+    RegisterEventHandler,
+    SetEnvironmentVariable,
+)
 from launch.conditions import IfCondition
 from launch.event_handlers import OnProcessExit
+from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import (
     Command,
     EnvironmentVariable,
@@ -36,7 +43,7 @@ lekiwi_share_parent_dir = str(lekiwi_share_dir.parent)
 ARGUMENTS = [
     DeclareLaunchArgument(
         "isaac_root",
-        default_value="/home/andcav/isaacsim",
+        default_value=str(Path.home() / "isaacsim"),
         description="Isaac Sim install root (contains python.sh).",
     ),
     DeclareLaunchArgument(
@@ -72,6 +79,16 @@ ARGUMENTS = [
         "use_ros2_control",
         default_value="true",
         description="Start ros2_control (controller_manager + controllers).",
+    ),
+    DeclareLaunchArgument(
+        "use_moveit",
+        default_value="false",
+        description="Start MoveIt move_group.",
+    ),
+    DeclareLaunchArgument(
+        "moveit_use_rviz",
+        default_value="true",
+        description="Start MoveIt RViz when MoveIt is enabled.",
     ),
     DeclareLaunchArgument(
         "enable_wheel_velocity_bridge",
@@ -201,6 +218,8 @@ def generate_launch_description():
     yaw = LaunchConfiguration("yaw")
     fix_base = LaunchConfiguration("fix_base")
     use_ros2_control = LaunchConfiguration("use_ros2_control")
+    use_moveit = LaunchConfiguration("use_moveit")
+    moveit_use_rviz = LaunchConfiguration("moveit_use_rviz")
     enable_wheel_velocity_bridge = LaunchConfiguration("enable_wheel_velocity_bridge")
     enable_cmd_vel_to_wheel = LaunchConfiguration("enable_cmd_vel_to_wheel")
     cmd_vel_topic = LaunchConfiguration("cmd_vel_topic")
@@ -428,6 +447,44 @@ def generate_launch_description():
         ),
     )
 
+    move_group_launch = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(
+            PathJoinSubstitution(
+                [FindPackageShare("lekiwi_moveit"), "launch", "move_group.launch.py"]
+            )
+        ),
+        condition=IfCondition(
+            PythonExpression(
+                [
+                    "'",
+                    use_moveit,
+                    "' == 'true' and '",
+                    use_ros2_control,
+                    "' == 'true'",
+                ]
+            )
+        ),
+    )
+
+    moveit_rviz_launch = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(
+            PathJoinSubstitution(
+                [FindPackageShare("lekiwi_moveit"), "launch", "moveit_rviz.launch.py"]
+            )
+        ),
+        condition=IfCondition(
+            PythonExpression(
+                [
+                    "'",
+                    use_moveit,
+                    "' == 'true' and '",
+                    moveit_use_rviz,
+                    "' == 'true'",
+                ]
+            )
+        ),
+    )
+
     rviz_node = Node(
         package="rviz2",
         executable="rviz2",
@@ -435,7 +492,19 @@ def generate_launch_description():
         output="log",
         arguments=["-d", rviz_config],
         parameters=[{"use_sim_time": use_sim_time}],
-        condition=IfCondition(use_rviz),
+        condition=IfCondition(
+            PythonExpression(
+                [
+                    "'",
+                    use_rviz,
+                    "' == 'true' and not ('",
+                    use_moveit,
+                    "' == 'true' and '",
+                    moveit_use_rviz,
+                    "' == 'true')",
+                ]
+            )
+        ),
     )
 
     # # Publishes world→odom (identity) so the robot is localized in a world frame.
@@ -469,5 +538,7 @@ def generate_launch_description():
     ld.add_action(joint_state_broadcaster_spawner)
     ld.add_action(controllers_after_jsb)
     ld.add_action(joint_state_publisher_node)
+    ld.add_action(move_group_launch)
+    ld.add_action(moveit_rviz_launch)
     ld.add_action(rviz_node)
     return ld
